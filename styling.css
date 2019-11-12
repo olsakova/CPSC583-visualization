@@ -31,8 +31,8 @@ div#div_visuals {
     background: lightgrey;
     background-clip: content-box;
     width: 100%;
-    height: 100%;
-    min-height: 700px;
+    height: auto;
+    min-height: auto;
     box-sizing: border-box;
     padding: 10px;
 }
@@ -44,10 +44,15 @@ div.tooltip {
     height: 60px;
     padding: 2px;
     font: 12px sans-serif;
-    background: #5e965b;
+    background: #888;
     color: white;
     border: 0px;
     padding-top: 5px;
-    border-radius: 8px;
+    border-radius: 4px;
     pointer-events: none;
+}
+
+div.tooltip .title{
+	font-size: 14px;
+	font-weight: bold;
 }

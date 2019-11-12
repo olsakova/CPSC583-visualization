@@ -1,3 +1,8 @@
+/*
+	With reference to: https://bost.ocks.org/mike/map/
+
+*/
+
 window.onload = function(){
     makeCharts();
 };
@@ -5,7 +10,9 @@ window.onload = function(){
 
 const WIDTH = 850;
 const HEIGHT = 600;
-
+const MARGINS = {top: 0, bottom: 0, left: 0, right: 20};
+let minHappiness;
+let maxHappiness;
 
 function makeCharts(){
     //Get the data
@@ -14,18 +21,22 @@ function makeCharts(){
     // Use the data!
     function useTheData(data) {
 		let mapSvg = d3.select('#map')
-					.attr('width', WIDTH)
-					.attr('height', HEIGHT)
-					.style('background-color', 'cornflowerblue');
-					
+					.attr('width', WIDTH + MARGINS.left + MARGINS.right)
+					.attr('height', HEIGHT + MARGINS.top + MARGINS.bottom)
+					.style('background-color', 'cornflowerblue');					
 		const projection = d3.geoMercator()
 			.scale(130)
 			.translate( [(WIDTH / 2), 400]);
 
 		const path = d3.geoPath().projection(projection);
 		
-		const happinessScale = d3.scaleSequential(d3.interpolatePlasma)
-								.domain([d3.min(data, d => {return d.HappinessScore;}), d3.max(data, d => {return d.HappinessScore;})]);
+		minHappiness = d3.min(data, d => {return parseFloat(d.HappinessScore);});
+		maxHappiness = d3.max(data, d => {return parseFloat(d.HappinessScore);});
+		
+		const colorScale = d3.scaleLinear()
+			.domain([minHappiness, maxHappiness])
+    		.range(["#2c7bb6", "#00a6ca","#00ccbc","#90eb9d","#ffff8c",
+            "#f9d057","#f29e2e","#e76818","#d7191c"]);
 		
 		let HACData = {};
 
@@ -69,7 +80,7 @@ function makeCharts(){
 				d.spirit = (HACData[d.properties.name] || {Spirit_PerCapita: null}).Spirit_PerCapita
 				d.wine = (HACData[d.properties.name] || {Wine_PerCapita: null}).Wine_PerCapita
 			});
-
+			
 			mapSvg.append('g')
 				.attr('class', 'countries')
 				.selectAll('path')
@@ -78,27 +89,90 @@ function makeCharts(){
 				.append('path')
 				.attr('class', d => {return 'country-' + d.id;})
 				.attr('d', path)
-				.style('fill', d => {return d.happiness ? happinessScale(d.happiness) : 'white';})
+				.style('fill', d => {return d.happiness ? colorScale(parseFloat(d.happiness)) : 'white';})
 				.style('opacity', d => {return d.happiness ? 1.0 : 0.5;})
 				.style('stroke', 'black')
 				.style('stroke-width', 0.3)
 				.on('mouseover',function(d){
-					div
-						.html(d.properties.name + "</br> Wine: " + d.wine +  "</br>Spirits: " + d.spirit + "</br> Beer:" +d.beer)
-						.style("opacity", 1)
-						.style("left", (d3.event.pageX) + "px")
-						.style("top", (d3.event.pageY - 28) + "px");
+				
+					if(d.happiness)
+					{
+						div.html('<span class="title">' + d.properties.name + "</span></br> Wine: " + d.wine +  "</br>Spirits: " + d.spirit + "</br> Beer: " +d.beer)
+							.style("opacity", 1)
+							.style("left", (d3.event.pageX) + "px")
+							.style("top", (d3.event.pageY - 28) + "px");
+					}
 				})
 				.on('mouseout', function(d){
 					div.style("opacity", 0)
 				});
+		
+		
+			let mapLegendLinearScale = d3.scaleLinear()
+										.domain([d3.min(data, d => {return d.HappinessScore;}), d3.max(data, d => {return d.HappinessScore;})])
+										.range([HEIGHT, 0]);
 			
-			mapSvg.append('path')
-				.datum(topojson.mesh(map_data.features, (a, b) => a.id !== b.id))
-				.attr('class', 'names')
-				.attr('d', path);
+			let legend = mapSvg.append('rect')
+				.attr('x', WIDTH)
+				.attr('width', 10)
+				.attr('height', HEIGHT)
+				.attr('class', 'legend')
+				.attr('transform', `rotate(180, ${WIDTH + 10 / 2}, ${HEIGHT / 2})`) //Flip scale so Happy is on top
+				.attr('fill', 'url("#gradient")');
+			
+			let defs = mapSvg.append('defs');
+    		let linearGradient = defs.append("linearGradient")
+									.attr("id", "gradient")
+									.attr('gradientTransform','rotate(90)');
+			 linearGradient.selectAll("stop")
+				.data( colorScale.range() )
+				.enter().append("stop")
+				.attr("offset", function(d,i) { return i/(colorScale.range().length-1); })
+				.attr("stop-color", function(d) { return d; });
+			
+			
+			//Old way, found simpler way
+//			//Build a gradient 
+//			/*
+//				References: 
+//					https://bl.ocks.org/HarryStevens/6eb89487fc99ad016723b901cbd57fde
+//					https://bl.ocks.org/starcalibre/6cccfa843ed254aa0a0d
+//			*/
+//			let defs = mapSvg.append('defs');
+//    		let linearGradient = defs.append("linearGradient")
+//									.attr("id", "gradient")
+//									.attr('gradientTransform','rotate(90)');
+//						
+//			let gradientSteps = generateListBetween(parseFloat(minHappiness), parseFloat(maxHappiness), 0.1);
+//			
+//			linearGradient.selectAll("stop")
+//				.data(gradientSteps)
+//				.enter()
+//				.append("stop")
+//				.attr("offset", d => ( (d - parseFloat(minHappiness)) / (parseFloat(maxHappiness) - parseFloat(minHappiness)) * 100)  + "%")
+//				.attr("stop-color", d => happinessScale(d));
+//
+//			mapSvg.selectAll('text.legend')
+//				.data()
+			
+			
+
 			
 		});
 
 	}
+}
+
+function generateListBetween(min, max, step)
+{
+	let out = [];
+	let i = min;
+	
+	while(i <= max)
+	{
+		out.push(i);
+		i += step;
+	}
+	
+	return out;
 }
