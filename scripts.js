@@ -33,6 +33,21 @@ function makeCharts(){
 			//Special case remappings for countries that have different names between our data and the map data
 			switch(d.Country)
 			{
+				case "Cote d'Ivoire":
+					HACData['Ivory Coast'] = d;
+					break;
+				case "Dem. Rep. Congo":
+					HACData['Democratic Republic of the Congo'] = d;
+					break;
+				case "Rep. Congo":
+					HACData['Republic of the Congo'] = d;
+					break;
+				case "Russian Federation":
+					HACData['Russia'] = d;
+					break;
+				case 'United Kingdom':
+					HACData['England'] = d;
+					break;
 				case 'United States':
 					HACData['USA'] = d;
 					break;
