@@ -13,7 +13,6 @@ function makeCharts(){
 
     // Use the data!
     function useTheData(data) {
-        
 		let mapSvg = d3.select('#map')
 					.attr('width', WIDTH)
 					.attr('height', HEIGHT)
@@ -29,7 +28,7 @@ function makeCharts(){
 								.domain([d3.min(data, d => {return d.HappinessScore;}), d3.max(data, d => {return d.HappinessScore;})]);
 		
 		let HACData = {};
-		
+
 		data.forEach(d => {
 			//Special case remappings for countries that have different names between our data and the map data
 			switch(d.Country)
@@ -43,10 +42,19 @@ function makeCharts(){
 			}
 			
 		})
-				
+
+		var div = d3.select("body").append("div")
+			.attr("class", "tooltip")
+			.style("opacity", 0);
+
 		d3.json('world_countries.json').then((map_data) => {
-			map_data.features.forEach( d => d.happiness = (HACData[d.properties.name] || {HappinessScore: null}).HappinessScore);
-			
+			map_data.features.forEach( d => {
+				d.happiness = (HACData[d.properties.name] || {HappinessScore: null}).HappinessScore
+				d.beer = (HACData[d.properties.name] || {Beer_PerCapita: null}).Beer_PerCapita
+				d.spirit = (HACData[d.properties.name] || {Spirit_PerCapita: null}).Spirit_PerCapita
+				d.wine = (HACData[d.properties.name] || {Wine_PerCapita: null}).Wine_PerCapita
+			});
+
 			mapSvg.append('g')
 				.attr('class', 'countries')
 				.selectAll('path')
@@ -59,6 +67,16 @@ function makeCharts(){
 				.style('opacity', d => {return d.happiness ? 1.0 : 0.5;})
 				.style('stroke', 'black')
 				.style('stroke-width', 0.3)
+				.on('mouseover',function(d){
+					div
+						.html(d.properties.name + "</br> Wine: " + d.wine +  "</br>Spirits: " + d.spirit + "</br> Beer:" +d.beer)
+						.style("opacity", 1)
+						.style("left", (d3.event.pageX) + "px")
+						.style("top", (d3.event.pageY - 28) + "px");
+				})
+				.on('mouseout', function(d){
+					div.style("opacity", 0)
+				});
 			
 			mapSvg.append('path')
 				.datum(topojson.mesh(map_data.features, (a, b) => a.id !== b.id))
@@ -66,14 +84,6 @@ function makeCharts(){
 				.attr('d', path);
 			
 		});
-		
-		
-		
-		// Parse the data into usable format
-		
 
-        // Use that data to make the svg stuff
-		
-		
-    }
+	}
 }
