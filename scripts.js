@@ -35,9 +35,8 @@ function makeCharts(){
 		
 		const colorScale = d3.scaleLinear()
 			.domain([minHappiness, maxHappiness])
-    		.range(["#2c7bb6", "#00a6ca","#00ccbc","#90eb9d","#ffff8c",
-            "#f9d057","#f29e2e","#e76818","#d7191c"]);
-		
+			.range(["red", "yellow"])
+
 		let HACData = {};
 
 		data.forEach(d => {
@@ -97,7 +96,7 @@ function makeCharts(){
 				
 					if(d.happiness)
 					{
-						div.html('<span class="title">' + d.properties.name + "</span></br> Wine: " + d.wine +  "</br>Spirits: " + d.spirit + "</br> Beer: " +d.beer)
+						div.html(d.happiness + ' <span class="title">' + d.properties.name + "</span></br> Wine: " + d.wine +  "</br>Spirits: " + d.spirit + "</br> Beer: " +d.beer)
 							.style("opacity", 1)
 							.style("left", (d3.event.pageX) + "px")
 							.style("top", (d3.event.pageY - 28) + "px");
