@@ -34,8 +34,8 @@ function makeCharts(){
 		maxHappiness = d3.max(data, d => {return parseFloat(d.HappinessScore);});
 		
 		const colorScale = d3.scaleLinear()
-			.domain([minHappiness, maxHappiness])
-			.range(["red", "yellow"])
+			.domain([minHappiness, minHappiness + (maxHappiness - minHappiness)/2, maxHappiness])
+			.range(["red", "orange", "cyan"]);
 
 		let HACData = {};
 
