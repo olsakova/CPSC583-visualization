@@ -119,6 +119,11 @@ function makeCharts(){
 				.attr('transform', `rotate(180, ${WIDTH + 10 / 2}, ${HEIGHT / 2})`) //Flip scale so Happy is on top
 				.attr('fill', 'url("#gradient")');
 			
+			//Build Gradient
+			/*
+				References: https://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
+			*/
+			
 			let defs = mapSvg.append('defs');
     		let linearGradient = defs.append("linearGradient")
 									.attr("id", "gradient")
@@ -129,30 +134,6 @@ function makeCharts(){
 				.attr("offset", function(d,i) { return i/(colorScale.range().length-1); })
 				.attr("stop-color", function(d) { return d; });
 			
-			
-			//Old way, found simpler way
-//			//Build a gradient 
-//			/*
-//				References: 
-//					https://bl.ocks.org/HarryStevens/6eb89487fc99ad016723b901cbd57fde
-//					https://bl.ocks.org/starcalibre/6cccfa843ed254aa0a0d
-//			*/
-//			let defs = mapSvg.append('defs');
-//    		let linearGradient = defs.append("linearGradient")
-//									.attr("id", "gradient")
-//									.attr('gradientTransform','rotate(90)');
-//						
-//			let gradientSteps = generateListBetween(parseFloat(minHappiness), parseFloat(maxHappiness), 0.1);
-//			
-//			linearGradient.selectAll("stop")
-//				.data(gradientSteps)
-//				.enter()
-//				.append("stop")
-//				.attr("offset", d => ( (d - parseFloat(minHappiness)) / (parseFloat(maxHappiness) - parseFloat(minHappiness)) * 100)  + "%")
-//				.attr("stop-color", d => happinessScale(d));
-//
-//			mapSvg.selectAll('text.legend')
-//				.data()
 			
 			
 
