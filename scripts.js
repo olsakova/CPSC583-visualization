@@ -10,7 +10,7 @@ window.onload = function(){
 
 const WIDTH = 850;
 const HEIGHT = 600;
-const MARGINS = {top: 0, bottom: 0, left: 0, right: 20};
+const MARGINS = {top: 0, bottom: 0, left: 0, right: 100};
 let minHappiness;
 let maxHappiness;
 
@@ -22,8 +22,8 @@ function makeCharts(){
     function useTheData(data) {
 		let mapSvg = d3.select('#map')
 					.attr('width', WIDTH + MARGINS.left + MARGINS.right)
-					.attr('height', HEIGHT + MARGINS.top + MARGINS.bottom)
-					.style('background-color', 'cornflowerblue');					
+					.attr('height', HEIGHT + MARGINS.top + MARGINS.bottom);
+		
 		const projection = d3.geoMercator()
 			.scale(130)
 			.translate( [(WIDTH / 2), 400]);
@@ -36,7 +36,7 @@ function makeCharts(){
 		const colorScale = d3.scaleLinear()
 			.domain([minHappiness, minHappiness + (maxHappiness - minHappiness)/2, maxHappiness])
 			.range(["red", "orange", "cyan"]);
-
+		
 		let HACData = {};
 
 		data.forEach(d => {
@@ -80,6 +80,13 @@ function makeCharts(){
 				d.wine = (HACData[d.properties.name] || {Wine_PerCapita: null}).Wine_PerCapita
 			});
 			
+			//Draw map background
+			mapSvg.append('rect')
+				.attr('width', WIDTH)
+				.attr('height', HEIGHT)
+				.style('fill', 'cornflowerblue');
+			
+			//Draw countries onto map
 			mapSvg.append('g')
 				.attr('class', 'countries')
 				.selectAll('path')
@@ -89,17 +96,18 @@ function makeCharts(){
 				.attr('class', d => {return 'country-' + d.id;})
 				.attr('d', path)
 				.style('fill', d => {return d.happiness ? colorScale(parseFloat(d.happiness)) : 'white';})
-				.style('opacity', d => {return d.happiness ? 1.0 : 0.5;})
+				.style('opacity', d => {return d.happiness ? 1.0 : 0.6;})
 				.style('stroke', 'black')
 				.style('stroke-width', 0.3)
-				.on('mouseover',function(d){
+				//Tooltips!
+				.on('mousemove',function(d){
 				
 					if(d.happiness)
 					{
 						div.html('<span class="title">' + d.properties.name + "</span></br> Wine: " + d.wine +  "</br>Spirits: " + d.spirit + "</br> Beer: " +d.beer)
 							.style("opacity", 1)
-							.style("left", (d3.event.pageX) + "px")
-							.style("top", (d3.event.pageY - 28) + "px");
+							.style("left", (d3.event.pageX) - div.node().clientWidth/2 + "px")
+							.style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
 					}
 				})
 				.on('mouseout', function(d){
@@ -107,9 +115,10 @@ function makeCharts(){
 				});
 		
 		
+			
 			let mapLegendLinearScale = d3.scaleLinear()
-										.domain([d3.min(data, d => {return d.HappinessScore;}), d3.max(data, d => {return d.HappinessScore;})])
-										.range([HEIGHT, 0]);
+										.domain([minHappiness, maxHappiness])
+										.range([HEIGHT - 20, 20]);
 			
 			let legend = mapSvg.append('rect')
 				.attr('x', WIDTH)
@@ -134,7 +143,23 @@ function makeCharts(){
 				.attr("offset", function(d,i) { return i/(colorScale.range().length-1); })
 				.attr("stop-color", function(d) { return d; });
 			
+			mapSvg.selectAll('text.legend')
+				.data(colorScale.nice().ticks(10))
+				.enter()
+				.append('text')
+				.attr('class', 'legend')
+				.attr('x', WIDTH + 15)
+				.attr('y', (d) => {return mapLegendLinearScale(d);})
+				.style('text-anchor', 'start')
+				.text((d) => {return d;});
 			
+			mapSvg.append('text')
+				.attr('class', 'legend-label')
+				.attr('x', WIDTH + 50)
+				.attr('y', HEIGHT / 2)
+				.style('text-anchor', 'middle')
+				.text('Happiness Score')
+				.attr('transform', `rotate(90, ${WIDTH + 50}, ${HEIGHT/2})`)
 			
 
 			
