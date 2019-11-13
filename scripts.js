@@ -11,9 +11,9 @@ window.onload = function(){
 const MAP_WIDTH = 850;
 const SIDE_WIDTH = 400;
 const HEIGHT = 600;
-const MARGINS = {top: 0, bottom: 0, left: 0, right: 150};
-const ROSEWIDTH = 800;
-const ROSEHEIGHT = 650;
+const MARGINS = {top: 0, bottom: 200, left: 0, right: 150};
+const ROSEWIDTH = 200;
+const ROSEHEIGHT = 200;
 //let minHappiness;
 //let maxHappiness;
 
@@ -30,7 +30,7 @@ function makeCharts(){
 		chartWidth = width - margin.left - margin.right,
 		chartHeight= height - margin.top - margin.bottom,
 		outerRadius = (Math.min(chartWidth, chartHeight) / 2),
-		g = roseSvg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+		g = roseSvg.append("g").attr("transform", "translate(" + (width) + "," + (HEIGHT + 100) + ")"); // <---- This is where you play with it's position
 
 	var angle = d3.scaleLinear()
 		.range([0, 2 * Math.PI]);
