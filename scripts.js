@@ -8,11 +8,19 @@ window.onload = function(){
 };
 
 
-const WIDTH = 850;
+const MAP_WIDTH = 850;
+const SIDE_WIDTH = 400;
 const HEIGHT = 600;
-const MARGINS = {top: 0, bottom: 0, left: 0, right: 100};
+const MARGINS = {top: 0, bottom: 0, left: 0, right: 150};
 let minHappiness;
 let maxHappiness;
+
+let ext_svg = {
+	wineGlass: null,
+	beerGlass: null,
+	martiniGlass: null
+};
+
 
 function makeCharts(){
     //Get the data
@@ -21,17 +29,21 @@ function makeCharts(){
     // Use the data!
     function useTheData(data) {
 		let mapSvg = d3.select('#map')
-					.attr('width', WIDTH + MARGINS.left + MARGINS.right)
+					.attr('width', MAP_WIDTH + MARGINS.left + MARGINS.right + SIDE_WIDTH)
 					.attr('height', HEIGHT + MARGINS.top + MARGINS.bottom);
 		
 		const projection = d3.geoMercator()
 			.scale(130)
-			.translate( [(WIDTH / 2), 400]);
+			.translate( [(MAP_WIDTH / 2), 400]);
 
 		const path = d3.geoPath().projection(projection);
 		
 		minHappiness = d3.min(data, d => {return parseFloat(d.HappinessScore);});
 		maxHappiness = d3.max(data, d => {return parseFloat(d.HappinessScore);});
+		
+		minMaxWine = {	min: d3.min(data, d => {return parseFloat(d.Wine_PerCapita);}),
+					 	max: d3.max(data, d => {return parseFloat(d.Wine_PerCapita);})};
+		
 		
 		const colorScale = d3.scaleLinear()
 			.domain([minHappiness, minHappiness + (maxHappiness - minHappiness)/2, maxHappiness])
@@ -82,10 +94,10 @@ function makeCharts(){
 			
 			//Draw map background
 			mapSvg.append('rect')
-				.attr('width', WIDTH)
+				.attr('width', MAP_WIDTH)
 				.attr('height', HEIGHT)
 				.style('fill', 'cornflowerblue');
-			
+						
 			//Draw countries onto map
 			mapSvg.append('g')
 				.attr('class', 'countries')
@@ -108,6 +120,16 @@ function makeCharts(){
 							.style("opacity", 1)
 							.style("left", (d3.event.pageX) - div.node().clientWidth/2 + "px")
 							.style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
+							
+						if(!ext_svg.wineGlass)
+						{
+							generateWineGlass();
+						}
+						else
+						{
+							updateGlassFill(ext_svg.wineGlass, d.wine);
+						}
+						
 					}
 				})
 				.on('mouseout', function(d){
@@ -120,12 +142,14 @@ function makeCharts(){
 										.domain([minHappiness, maxHappiness])
 										.range([HEIGHT - 20, 20]);
 			
-			let legend = mapSvg.append('rect')
-				.attr('x', WIDTH)
+			//Draw map legend
+			let legend = mapSvg.append('g');
+			legend.append('rect')
+				.attr('x', MAP_WIDTH)
 				.attr('width', 10)
 				.attr('height', HEIGHT)
 				.attr('class', 'legend')
-				.attr('transform', `rotate(180, ${WIDTH + 10 / 2}, ${HEIGHT / 2})`) //Flip scale so Happy is on top
+				.attr('transform', `rotate(180, ${MAP_WIDTH + 10 / 2}, ${HEIGHT / 2})`) //Flip scale so Happy is on top
 				.attr('fill', 'url("#gradient")');
 			
 			//Build Gradient
@@ -143,41 +167,72 @@ function makeCharts(){
 				.attr("offset", function(d,i) { return i/(colorScale.range().length-1); })
 				.attr("stop-color", function(d) { return d; });
 			
-			mapSvg.selectAll('text.legend')
+			//Legend axis
+			legend.selectAll('text.legend')
 				.data(colorScale.nice().ticks(10))
 				.enter()
 				.append('text')
 				.attr('class', 'legend')
-				.attr('x', WIDTH + 15)
+				.attr('x', MAP_WIDTH + 15)
 				.attr('y', (d) => {return mapLegendLinearScale(d);})
 				.style('text-anchor', 'start')
 				.text((d) => {return d;});
 			
-			mapSvg.append('text')
+			//Legend label
+			legend.append('text')
 				.attr('class', 'legend-label')
-				.attr('x', WIDTH + 50)
+				.attr('x', MAP_WIDTH + 50)
 				.attr('y', HEIGHT / 2)
 				.style('text-anchor', 'middle')
 				.text('Happiness Score')
-				.attr('transform', `rotate(90, ${WIDTH + 50}, ${HEIGHT/2})`)
+				.attr('transform', `rotate(90, ${MAP_WIDTH + 50}, ${HEIGHT/2})`);
 			
+			legend.append('text')
+				.attr('class', 'legend-label')
+				.attr('x', MAP_WIDTH + 50)
+				.attr('y', HEIGHT - 10)
+				.style('text-anchor', 'start')
+				.text('Unhappy');
+			
+			legend.append('text')
+				.attr('class', 'legend-label')
+				.attr('x', MAP_WIDTH + 50)
+				.attr('y', 20)
+				.style('text-anchor', 'start')
+				.text('Happy');
+			
+			
+			
+			function updateGlassFill(glassData, fillAmount)
+			{
+				glassData.fill.attr('height', glassData.scale(fillAmount))
+						.attr('y', glassData.maxHeight + (glassData.y - glassData.scale(fillAmount)));
+			}
+			
+			function generateWineGlass()
+			{
+				d3.selectAll('#wineglass').remove();
+				
+				d3.xml('wineglass.svg').then((wineGlass) => {
+					mapSvg.node().appendChild(wineGlass.getElementsByTagName('svg')[0]);
 
+
+					let glass = mapSvg.select("#wineglass")
+						.attr('x', MAP_WIDTH + MARGINS.right + 100)
+						.attr('y', 50);
+
+					let fill = glass.select('#fill');
+
+					let maxHeight = fill.node().height.baseVal.value;
+					let y = fill.node().y.baseVal.value;
+
+					let wineScale = d3.scaleLinear().range([0, maxHeight]).domain([minMaxWine.min, minMaxWine.max]);
+					
+					ext_svg.wineGlass = {glass: glass, scale: wineScale, fill: fill, y: y, maxHeight: maxHeight};
+				});
+			}
 			
 		});
-
 	}
 }
 
-function generateListBetween(min, max, step)
-{
-	let out = [];
-	let i = min;
-	
-	while(i <= max)
-	{
-		out.push(i);
-		i += step;
-	}
-	
-	return out;
-}
