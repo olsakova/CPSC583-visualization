@@ -10,10 +10,10 @@ window.onload = function(){
 
 const MAP_WIDTH = 850;
 const SIDE_WIDTH = 400;
-const HEIGHT = 600;
-const MARGINS = {top: 0, bottom: 200, left: 0, right: 150};
-const ROSEWIDTH = 200;
-const ROSEHEIGHT = 200;
+const HEIGHT = 800;
+const MARGINS = {top: 0, bottom: 600, left: 0, right: 150};
+const ROSEWIDTH = 550;
+const ROSEHEIGHT = 400;
 //let minHappiness;
 //let maxHappiness;
 
@@ -30,7 +30,7 @@ function makeCharts(){
 		chartWidth = width - margin.left - margin.right,
 		chartHeight= height - margin.top - margin.bottom,
 		outerRadius = (Math.min(chartWidth, chartHeight) / 2),
-		g = roseSvg.append("g").attr("transform", "translate(" + (width) + "," + (HEIGHT + 100) + ")"); // <---- This is where you play with it's position
+		g = roseSvg.append("g").attr("transform", "translate(" + (width - 300) + "," + (HEIGHT + 250) + ")"); // <---- This is where you play with it's position
 
 	var angle = d3.scaleLinear()
 		.range([0, 2 * Math.PI]);
@@ -425,7 +425,7 @@ function makeCharts(){
 		label.append("text")
 			.attr("transform", function(d) { return (x(d.Region) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)"; })
 			.text(function(d) { return d.Region; })
-			.style("font-size",14);
+			.style("font-size",12);
 
 		g.selectAll(".axis")
 			.data(d3.range(angle.domain()[1]))
@@ -454,7 +454,7 @@ function makeCharts(){
 			.attr("dy", "-0.35em")
 			.attr("x", function() { return -10; })
 			.text(y.tickFormat(5, "s"))
-			.style("font-size",14);
+			.style("font-size",12);
 
 
 		var roseLegend = g.append("g")

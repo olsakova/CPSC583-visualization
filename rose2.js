@@ -3,8 +3,8 @@ window.onload = function(){
 };
 
 //svg element window variables
-const WIDTH = 800;
-const HEIGHT = 650;
+const WIDTH = 500;
+const HEIGHT = 300;
 
 //set svg box size and return it
 function configureBox(id) {
