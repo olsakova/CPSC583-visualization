@@ -21,34 +21,6 @@ let ext_svg = {};
 
 
 function makeCharts(){
-	// following setup needed for rose chart
-	var roseSvg = d3.select("svg"),
-		width = ROSEWIDTH,
-		height = ROSEHEIGHT,
-		margin = {top: 40, right: 80, bottom: 40, left: 40},
-		innerRadius = 20,
-		chartWidth = width - margin.left - margin.right,
-		chartHeight= height - margin.top - margin.bottom,
-		outerRadius = (Math.min(chartWidth, chartHeight) / 2),
-		g = roseSvg.append("g").attr("transform", "translate(" + (width - 300) + "," + (HEIGHT + 250) + ")"); // <---- This is where you play with it's position
-
-	var angle = d3.scaleLinear()
-		.range([0, 2 * Math.PI]);
-
-	var radius = d3.scaleLinear()
-		.range([innerRadius, outerRadius]);
-
-	var x = d3.scaleBand()
-		.range([0, 2 * Math.PI])
-		.align(0);
-
-	var y = d3.scaleLinear() //you can try scaleRadial but it scales differently
-		.range([innerRadius, outerRadius]);
-
-	var z = d3.scaleOrdinal()
-		.range(["#4242f4", "#42c5f4", "#42f4ce"]);
-
-
     //Get the data
     d3.csv("HappinessAlcoholConsumption.csv").then(useTheData)
 
@@ -348,12 +320,6 @@ function makeCharts(){
 			});
 		}
 
-		//Rose chart code
-		var dataset = data;
-		for (i = 6, t = 0; i < dataset.columns.length; ++i) {
-			t += dataset[dataset.columns[i]] = +dataset[dataset.columns[i]];
-		}
-		dataset.total = t;
 		// Combine data based on alcohol, because its not usable in its current format
 		var regionsByAlcohol2 = d3.nest()
 			.key(function(d) { return d.Region; })
@@ -362,7 +328,7 @@ function makeCharts(){
 				Beer_PerCapita: d3.sum(v, function(d) { return d.Beer_PerCapita; }),
 				Spirit_PerCapita: d3.sum(v, function(d) { return d.Spirit_PerCapita; })
 			}; })
-			.object(dataset);
+			.object(data);
 		// console.log(regionsByAlcohol2)
 
 		// use map to bring the arrays together
@@ -379,7 +345,45 @@ function makeCharts(){
 		}
 		regionsByAlcohol4.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 
-		console.log(dataset);
+		roseChart(data, regionsByAlcohol4, 300, 250, false);
+		roseChart(data, regionsByAlcohol4, -100, 250, false);
+		roseChart(data, regionsByAlcohol4, -500, 250, true);
+	}
+
+	function roseChart(dataset, customizedData, leftOffset, topOffset, legend) {
+		// following setup needed for rose chart
+		var roseSvg = d3.select("svg"),
+			width = ROSEWIDTH,
+			height = ROSEHEIGHT,
+			margin = {top: 40, right: 80, bottom: 40, left: 40},
+			innerRadius = 20,
+			chartWidth = width - margin.left - margin.right,
+			chartHeight= height - margin.top - margin.bottom,
+			outerRadius = (Math.min(chartWidth, chartHeight) / 2),
+			g = roseSvg.append("g").attr("transform", "translate(" + (width - leftOffset) + "," + (HEIGHT + topOffset) + ")"); // <---- This is where you play with it's position
+
+		var angle = d3.scaleLinear()
+			.range([0, 2 * Math.PI]);
+
+		var radius = d3.scaleLinear()
+			.range([innerRadius, outerRadius]);
+
+		var x = d3.scaleBand()
+			.range([0, 2 * Math.PI])
+			.align(0);
+
+		var y = d3.scaleLinear() //you can try scaleRadial but it scales differently
+			.range([innerRadius, outerRadius]);
+
+		var z = d3.scaleOrdinal()
+			.range(["#aa0114", "#d28816", "#42f4ce"]);
+
+		//Rose chart code
+		for (i = 6, t = 0; i < dataset.columns.length; ++i) {
+			t += dataset[dataset.columns[i]] = +dataset[dataset.columns[i]];
+		}
+		dataset.total = t;
+
 		var countryAlcohol1 = d3.nest()
 			.key(function(d) { return d.Region; })
 			.object(dataset);
@@ -393,14 +397,14 @@ function makeCharts(){
 
 		x.domain(dataset.map(function(d) { return d.Region; }));
 		y.domain([0, 12000]);
-		z.domain(regionsByAlcohol4.columns.slice(1));
+		z.domain(customizedData.columns.slice(1));
 		// Extend the domain slightly to match the range of [0, 2π].
-		angle.domain([0, d3.max(regionsByAlcohol4, function(d,i) { return i + 1; })]);
-		radius.domain([0, d3.max(regionsByAlcohol4, function(d) { return d.y0 + d.y; })]);
-		angleOffset = -360.0/regionsByAlcohol4.length/2.0;
+		angle.domain([0, d3.max(customizedData, function(d,i) { return i + 1; })]);
+		radius.domain([0, d3.max(customizedData, function(d) { return d.y0 + d.y; })]);
+		angleOffset = -360.0/customizedData.length/2.0;
 		g.append("g")
 			.selectAll("g")
-			.data(d3.stack().keys(regionsByAlcohol4.columns.slice(1))(regionsByAlcohol4))
+			.data(d3.stack().keys(customizedData.columns.slice(1))(customizedData))
 			.enter().append("g")
 			.attr("fill", function(d) { return z(d.key); })
 			.selectAll("path")
@@ -456,12 +460,14 @@ function makeCharts(){
 			.text(y.tickFormat(5, "s"))
 			.style("font-size",12);
 
-
+	if(legend) {
 		var roseLegend = g.append("g")
 			.selectAll("g")
-			.data(regionsByAlcohol4.columns.slice(1).reverse())
+			.data(customizedData.columns.slice(1).reverse())
 			.enter().append("g")
-			.attr("transform", function(d, i) { return "translate(" + (outerRadius+0) + "," + (-outerRadius + 40 +(i - (regionsByAlcohol4.columns.length - 1) / 2) * 20) + ")"; });
+			.attr("transform", function (d, i) {
+				return "translate(" + (outerRadius + 0) + "," + (-outerRadius + 40 + (i - (customizedData.columns.length - 1) / 2) * 20) + ")";
+			});
 
 		roseLegend.append("rect")
 			.attr("width", 18)
@@ -472,8 +478,11 @@ function makeCharts(){
 			.attr("x", 24)
 			.attr("y", 9)
 			.attr("dy", "0.35em")
-			.text(function(d) { return d; })
-			.style("font-size",12);
+			.text(function (d) {
+				return d;
+			})
+			.style("font-size", 12);
+	}
 	}
 }
 
