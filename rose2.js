@@ -3,8 +3,8 @@ window.onload = function(){
 };
 
 //svg element window variables
-const WIDTH = 800;
-const HEIGHT = 650;
+const WIDTH = 500;
+const HEIGHT = 300;
 
 //set svg box size and return it
 function configureBox(id) {
@@ -45,16 +45,15 @@ function setupBars(){
     var z = d3.scaleOrdinal()
         .range(["#4242f4", "#42c5f4", "#42f4ce"]);
 
-    d3.csv("HappinessAlcoholConsumption.csv", function(d, i, columns) {
-        for (i = 6, t = 0; i < columns.length; ++i) {
-            t += d[columns[i]] = +d[columns[i]];
+    d3.csv("HappinessAlcoholConsumption.csv").then(makeTheChart)
+
+    // Use the data!
+    function makeTheChart(dataset) {
+
+        for (i = 6, t = 0; i < dataset.columns.length; ++i) {
+            t += dataset[dataset.columns[i]] = +dataset[dataset.columns[i]];
         }
-
-        d.total = t;
-        return d;
-    }, function(error, dataset) {
-        if (error) throw error;
-
+        dataset.total = t;
         // Combine data based on alcohol, because its not usable in its current format
         var regionsByAlcohol2 = d3.nest()
             .key(function(d) { return d.Region; })
@@ -64,13 +63,13 @@ function setupBars(){
                 Spirit_PerCapita: d3.sum(v, function(d) { return d.Spirit_PerCapita; })
             }; })
             .object(dataset);
-        console.log(regionsByAlcohol2)
+        // console.log(regionsByAlcohol2)
 
         // use map to bring the arrays together
         var regionsByAlcohol3 = Object.keys(regionsByAlcohol2).map(function(key) {
             return [String(key), regionsByAlcohol2[key]];
         });
-        console.log(regionsByAlcohol3)
+        // console.log(regionsByAlcohol3)
 
         // put into an array of arrays (because we got a bunch of object arrays that cant be stacked)
         var regionsByAlcohol4 = [];
@@ -79,6 +78,18 @@ function setupBars(){
             regionsByAlcohol4[i] = temp;
         }
         regionsByAlcohol4.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+        console.log(dataset);
+        var countryAlcohol1 = d3.nest()
+            .key(function(d) { return d.Region; })
+            .object(dataset);
+
+        var countryAlcohol2 = Object.keys(countryAlcohol1).map(function(key) {
+            return [String(key), countryAlcohol1[key]];
+        });
+        console.log(countryAlcohol1);
+        console.log(countryAlcohol2);
+        console.log("test2")
 
         x.domain(dataset.map(function(d) { return d.Region; }));
         y.domain([0, 12000]);
@@ -163,7 +174,7 @@ function setupBars(){
             .attr("dy", "0.35em")
             .text(function(d) { return d; })
             .style("font-size",12);
-    })
+    }
 }
 
 
