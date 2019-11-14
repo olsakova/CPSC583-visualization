@@ -399,7 +399,7 @@ function makeCharts(){
 			westernEurope2[i] = temp;
 		}
 		westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-		roseChart(data, westernEurope2, -100, 650, false, true, 600);
+		roseChart(data, westernEurope2, -100, 650, false, true, 700);
 
 		var middleEast = countryAlcohol2[5][1];
 		var middleEast2 = [];
