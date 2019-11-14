@@ -8,9 +8,9 @@ window.onload = function(){
 };
 
 
-const MAP_WIDTH = 1200;
+const MAP_WIDTH = 1000;
 const SIDE_WIDTH = 800;
-const HEIGHT = 800;
+const HEIGHT = 600;
 const MARGINS = {top: 0, bottom: 1000, left: 0, right: 150};
 const ROSEWIDTH = 550;
 const ROSEHEIGHT = 400;
