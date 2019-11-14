@@ -8,10 +8,10 @@ window.onload = function(){
 };
 
 
-const MAP_WIDTH = 850;
-const SIDE_WIDTH = 400;
+const MAP_WIDTH = 1200;
+const SIDE_WIDTH = 800;
 const HEIGHT = 800;
-const MARGINS = {top: 0, bottom: 600, left: 0, right: 150};
+const MARGINS = {top: 0, bottom: 1000, left: 0, right: 150};
 const ROSEWIDTH = 550;
 const ROSEHEIGHT = 400;
 //let minHappiness;
@@ -344,13 +344,101 @@ function makeCharts(){
 			regionsByAlcohol4[i] = temp;
 		}
 		regionsByAlcohol4.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		console.log(regionsByAlcohol4)
+		roseChart(data, regionsByAlcohol4, 300, 250, false, false, 12000);
 
-		roseChart(data, regionsByAlcohol4, 300, 250, false);
-		roseChart(data, regionsByAlcohol4, -100, 250, false);
-		roseChart(data, regionsByAlcohol4, -500, 250, true);
+		var countryAlcohol1 = d3.nest()
+			.key(function(d) { return d.Region; })
+			.object(data);
+
+		var countryAlcohol2 = Object.keys(countryAlcohol1).map(function(key) {
+			return [String(key), countryAlcohol1[key]];
+		});
+
+		var easternEurope = countryAlcohol2[0][1];
+		var easternEurope2 = [];
+		for (var i = 0; i < easternEurope.length; i++) {
+			var temp = {Country: easternEurope[i].Country, Wine_PerCapita: +easternEurope[i].Wine_PerCapita, Beer_PerCapita: +easternEurope[i].Beer_PerCapita, Spirit_PerCapita: +easternEurope[i].Spirit_PerCapita};
+			easternEurope2[i] = temp;
+		}
+		easternEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		console.log(easternEurope2);
+		roseChart(data, easternEurope2, -100, 250, false, true, 700);
+
+		var subAfrica = countryAlcohol2[1][1];
+		var subAfrica2 = [];
+		for (var i = 0; i < subAfrica.length; i++) {
+			var temp = {Country: subAfrica[i].Country, Wine_PerCapita: +subAfrica[i].Wine_PerCapita, Beer_PerCapita: +subAfrica[i].Beer_PerCapita, Spirit_PerCapita: +subAfrica[i].Spirit_PerCapita};
+			subAfrica2[i] = temp;
+		}
+		subAfrica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, subAfrica2, -500, 250, false, true, 500);
+
+		var southAmerica = countryAlcohol2[2][1];
+		var southAmerica2 = [];
+		for (var i = 0; i < southAmerica.length; i++) {
+			var temp = {Country: southAmerica[i].Country, Wine_PerCapita: +southAmerica[i].Wine_PerCapita, Beer_PerCapita: +southAmerica[i].Beer_PerCapita, Spirit_PerCapita: +southAmerica[i].Spirit_PerCapita};
+			southAmerica2[i] = temp;
+		}
+		southAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, southAmerica2, -900, 250, false, true, 500);
+
+		var aussie = countryAlcohol2[3][1];
+		var aussie2 = [];
+		for (var i = 0; i < aussie.length; i++) {
+			var temp = {Country: aussie[i].Country, Wine_PerCapita: +aussie[i].Wine_PerCapita, Beer_PerCapita: +aussie[i].Beer_PerCapita, Spirit_PerCapita: +aussie[i].Spirit_PerCapita};
+			aussie2[i] = temp;
+		}
+		aussie2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, aussie2, 300, 650, false, true, 600);
+
+		var westernEurope = countryAlcohol2[4][1];
+		var westernEurope2 = [];
+		for (var i = 0; i < westernEurope.length; i++) {
+			var temp = {Country: westernEurope[i].Country, Wine_PerCapita: +westernEurope[i].Wine_PerCapita, Beer_PerCapita: +westernEurope[i].Beer_PerCapita, Spirit_PerCapita: +westernEurope[i].Spirit_PerCapita};
+			westernEurope2[i] = temp;
+		}
+		westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, westernEurope2, -100, 650, false, true, 600);
+
+		var middleEast = countryAlcohol2[5][1];
+		var middleEast2 = [];
+		for (var i = 0; i < middleEast.length; i++) {
+			var temp = {Country: middleEast[i].Country, Wine_PerCapita: +middleEast[i].Wine_PerCapita, Beer_PerCapita: +middleEast[i].Beer_PerCapita, Spirit_PerCapita: +middleEast[i].Spirit_PerCapita};
+			middleEast2[i] = temp;
+		}
+		westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, westernEurope2, -500, 650, false, true, 600);
+
+		var seAsia = countryAlcohol2[6][1];
+		var seAsia2 = [];
+		for (var i = 0; i < seAsia.length; i++) {
+			var temp = {Country: seAsia[i].Country, Wine_PerCapita: +seAsia[i].Wine_PerCapita, Beer_PerCapita: +seAsia[i].Beer_PerCapita, Spirit_PerCapita: +seAsia[i].Spirit_PerCapita};
+			seAsia2[i] = temp;
+		}
+		seAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, seAsia2, -900, 650, false, true, 400);
+
+		var northAmerica = countryAlcohol2[7][1];
+		var northAmerica2 = [];
+		for (var i = 0; i < northAmerica.length; i++) {
+			var temp = {Country: northAmerica[i].Country, Wine_PerCapita: +northAmerica[i].Wine_PerCapita, Beer_PerCapita: +northAmerica[i].Beer_PerCapita, Spirit_PerCapita: +northAmerica[i].Spirit_PerCapita};
+			northAmerica2[i] = temp;
+		}
+		northAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, northAmerica2, -1300, 650, false, true, 600);
+
+		var eastAsia = countryAlcohol2[8][1];
+		var eastAsia2 = [];
+		for (var i = 0; i < eastAsia.length; i++) {
+			var temp = {Country: eastAsia[i].Country, Wine_PerCapita: +eastAsia[i].Wine_PerCapita, Beer_PerCapita: +eastAsia[i].Beer_PerCapita, Spirit_PerCapita: +eastAsia[i].Spirit_PerCapita};
+			eastAsia2[i] = temp;
+		}
+		eastAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, eastAsia2, -1300, 250, false, true, 500);
 	}
 
-	function roseChart(dataset, customizedData, leftOffset, topOffset, legend) {
+	function roseChart(dataset, customizedData, leftOffset, topOffset, legend, country, maxAmount) {
 		// following setup needed for rose chart
 		var roseSvg = d3.select("svg"),
 			width = ROSEWIDTH,
@@ -379,29 +467,19 @@ function makeCharts(){
 			.range(["#aa0114", "#d28816", "#42f4ce"]);
 
 		//Rose chart code
-		for (i = 6, t = 0; i < dataset.columns.length; ++i) {
-			t += dataset[dataset.columns[i]] = +dataset[dataset.columns[i]];
+		for (i = 6, t = 0; i < customizedData.columns.length; ++i) {
+			t += customizedData[customizedData.columns[i]] = +customizedData[customizedData.columns[i]];
 		}
-		dataset.total = t;
+		customizedData.total = t;
 
-		var countryAlcohol1 = d3.nest()
-			.key(function(d) { return d.Region; })
-			.object(dataset);
-
-		var countryAlcohol2 = Object.keys(countryAlcohol1).map(function(key) {
-			return [String(key), countryAlcohol1[key]];
-		});
-		console.log(countryAlcohol1);
-		console.log(countryAlcohol2);
-		console.log("test2")
-
-		x.domain(dataset.map(function(d) { return d.Region; }));
-		y.domain([0, 12000]);
+		x.domain(customizedData.map(function(d) { return country ? d.Country : d.Region; }));
+		y.domain([0, maxAmount]);
 		z.domain(customizedData.columns.slice(1));
 		// Extend the domain slightly to match the range of [0, 2π].
 		angle.domain([0, d3.max(customizedData, function(d,i) { return i + 1; })]);
 		radius.domain([0, d3.max(customizedData, function(d) { return d.y0 + d.y; })]);
 		angleOffset = -360.0/customizedData.length/2.0;
+
 		g.append("g")
 			.selectAll("g")
 			.data(d3.stack().keys(customizedData.columns.slice(1))(customizedData))
@@ -413,31 +491,31 @@ function makeCharts(){
 			.attr("d", d3.arc()
 				.innerRadius(function(d) { return y(d[0]); })
 				.outerRadius(function(d) { return y(d[1]); })
-				.startAngle(function(d) { return x(d.data.Region); })
-				.endAngle(function(d) { return x(d.data.Region) + x.bandwidth(); })
+				.startAngle(function(d) { return x(country ? d.data.Country : d.data.Region); })
+				.endAngle(function(d) { return x(country ? d.data.Country : d.data.Region) + x.bandwidth(); })
 				.padAngle(0.01)
 				.padRadius(innerRadius))
 			.attr("transform", function() {return "rotate("+ angleOffset + ")"});
 
 		var label = g.append("g")
 			.selectAll("g")
-			.data(dataset)
+			.data(customizedData)
 			.enter().append("g")
 			.attr("text-anchor", "middle")
-			.attr("transform", function(d) { return "rotate(" + ((x(d.Region) + x.bandwidth() / 2) * 180 / Math.PI - (90-angleOffset)) + ")translate(" + (outerRadius+30) + ",0)"; });
+			.attr("transform", function(d) { return "rotate(" + ((x(country ? d.Country : d.Region) + x.bandwidth() / 2) * 180 / Math.PI - (90-angleOffset)) + ")translate(" + (outerRadius+30) + ",0)"; });
 
 		label.append("text")
-			.attr("transform", function(d) { return (x(d.Region) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)"; })
-			.text(function(d) { return d.Region; })
+			.attr("transform", function(d) { return (x(country ? d.Country : d.Region) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)"; })
+			.text(function(d) { return country ? d.Country : d.Region; })
 			.style("font-size",12);
 
-		g.selectAll(".axis")
-			.data(d3.range(angle.domain()[1]))
-			.enter().append("g")
-			.attr("class", "axis")
-			.attr("transform", function(d) { return "rotate(" + angle(d) * 180 / Math.PI + ")"; })
-			.call(d3.axisLeft()
-				.scale(radius.copy().range([-innerRadius, -(outerRadius+10)])));
+		// g.selectAll(".axis")
+		// 	.data(d3.range(angle.domain()[1]))
+		// 	.enter().append("g")
+		// 	.attr("class", "axis")
+		// 	.attr("transform", function(d) { return "rotate(" + angle(d) * 180 / Math.PI + ")"; })
+		// 	.call(d3.axisLeft()
+		// 		.scale(radius.copy().range([-innerRadius, -(outerRadius+10)])));
 
 		var yAxis = g.append("g")
 			.attr("text-anchor", "middle");
