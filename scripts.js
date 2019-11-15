@@ -475,6 +475,7 @@ function makeCharts(){
 				regionsByAlcohol4[i] = temp;
 			}
 			regionsByAlcohol4.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
 			roseChart("World", data, regionsByAlcohol4, 0, 180, false, false, 12000);
 
 			var countryAlcohol1 = d3.nest()
