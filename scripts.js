@@ -11,7 +11,7 @@ window.onload = function(){
 const MAP_WIDTH = 1100;
 const SIDE_WIDTH = 260;
 const HEIGHT = 600;
-const MARGINS = {top: 0, bottom: 600, left: 0, right: 125};
+const MARGINS = {top: 0, bottom: 650, left: 0, right: 125};
 const ROSEWIDTH = 350;
 const ROSEHEIGHT = 300;
 
@@ -139,7 +139,7 @@ function makeCharts(){
 			mapSvg.append('rect')
 				.attr('width', MAP_WIDTH)
 				.attr('height', HEIGHT)
-				.style('fill', 'cornflowerblue');
+				.style('fill', '#71A6D2');
 						
 			//Draw countries onto map
 			mapSvg.append('g')
@@ -292,6 +292,18 @@ function makeCharts(){
 				.attr('height', MARGINS.bottom)
 				.attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
 				.style('fill', "#CCC")
+			
+			mapSvg.append('text')
+				.attr('y', HEIGHT + 25)
+				.attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)/2)
+				.style('text-anchor', 'middle')
+				.text("Alcohol Consumption by Region");
+			mapSvg.append('text')
+				.attr('y', HEIGHT + 40)
+				.attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)/2)
+				.style('text-anchor', 'middle')
+				.style('font-size', '12px')
+				.text('(litres per capita per year)');
 			
 			makeRoseCharts(countryAbbr);
 			
@@ -463,7 +475,7 @@ function makeCharts(){
 				regionsByAlcohol4[i] = temp;
 			}
 			regionsByAlcohol4.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, regionsByAlcohol4, 0, 110, false, false, 12000);
+			roseChart(data, regionsByAlcohol4, 0, 160, false, false, 12000);
 
 			var countryAlcohol1 = d3.nest()
 				.key(function(d) { return d.Region; })
@@ -480,7 +492,7 @@ function makeCharts(){
 				easternEurope2[i] = temp;
 			}
 			easternEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, easternEurope2, 300, 110, false, true, 700);
+			roseChart(data, easternEurope2, 300, 160, false, true, 700);
 
 			var subAfrica = countryAlcohol2[1][1];
 			var subAfrica2 = [];
@@ -489,7 +501,7 @@ function makeCharts(){
 				subAfrica2[i] = temp;
 			}
 			subAfrica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, subAfrica2, 600, 110, false, true, 500);
+			roseChart(data, subAfrica2, 600, 160, false, true, 500);
 
 			var southAmerica = countryAlcohol2[2][1];
 			var southAmerica2 = [];
@@ -498,7 +510,7 @@ function makeCharts(){
 				southAmerica2[i] = temp;
 			}
 			southAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, southAmerica2,900, 110, false, true, 500);
+			roseChart(data, southAmerica2,900, 160, false, true, 500);
 
 			var aussie = countryAlcohol2[3][1];
 			var aussie2 = [];
@@ -507,7 +519,7 @@ function makeCharts(){
 				aussie2[i] = temp;
 			}
 			aussie2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, aussie2, 1200, 110, false, true, 600);
+			roseChart(data, aussie2, 1200, 160, false, true, 600);
 
 			var westernEurope = countryAlcohol2[4][1];
 			var westernEurope2 = [];
@@ -516,7 +528,7 @@ function makeCharts(){
 				westernEurope2[i] = temp;
 			}
 			westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, westernEurope2, 0, 400, false, true, 600);
+			roseChart(data, westernEurope2, 0, 450, false, true, 600);
 
 			var middleEast = countryAlcohol2[5][1];
 			var middleEast2 = [];
@@ -525,7 +537,7 @@ function makeCharts(){
 				middleEast2[i] = temp;
 			}
 			westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, westernEurope2, 300, 400, false, true, 600);
+			roseChart(data, westernEurope2, 300, 450, false, true, 600);
 
 			var seAsia = countryAlcohol2[6][1];
 			var seAsia2 = [];
@@ -534,7 +546,7 @@ function makeCharts(){
 				seAsia2[i] = temp;
 			}
 			seAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, seAsia2, 600, 400, false, true, 400);
+			roseChart(data, seAsia2, 600, 450, false, true, 400);
 
 			var northAmerica = countryAlcohol2[7][1];
 			var northAmerica2 = [];
@@ -543,7 +555,7 @@ function makeCharts(){
 				northAmerica2[i] = temp;
 			}
 			northAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, northAmerica2, 1200, 400, false, true, 600);
+			roseChart(data, northAmerica2, 1200, 450, false, true, 600);
 
 			var eastAsia = countryAlcohol2[8][1];
 			var eastAsia2 = [];
@@ -552,7 +564,7 @@ function makeCharts(){
 				eastAsia2[i] = temp;
 			}
 			eastAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-			roseChart(data, eastAsia2, 900, 400, false, true, 500);
+			roseChart(data, eastAsia2, 900, 450, false, true, 500);
 		}
 
 		function roseChart(dataset, customizedData, leftOffset, topOffset, legend, country, maxAmount) {
@@ -581,7 +593,7 @@ function makeCharts(){
 				.range([innerRadius, outerRadius]);
 
 			var z = d3.scaleOrdinal()
-				.range(["#aa0114", "#d28816", "#00ffff"]);
+				.range(["#5c0010", "#d28816", "#00DDDD"]);
 
 			//Rose chart code
 			for (i = 6, t = 0; i < customizedData.columns.length; ++i) {
@@ -651,9 +663,9 @@ function makeCharts(){
 				.attr("r", y);
 
 			yTick.append("text")
-				.attr("y", function(d) { return -y(d); })
+				.attr("y", function(d) { return -y(d) + 2; })
 				.attr("dy", "-0.35em")
-				.attr("x", function() { return -10; })
+				.attr("x", 0)
 				.text(y.tickFormat(5, "s"))
 				.style("font-size",12);
 
