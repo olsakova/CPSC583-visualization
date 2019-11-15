@@ -9,7 +9,7 @@ window.onload = function(){
 
 
 const MAP_WIDTH = 1100;
-const SIDE_WIDTH = 250;
+const SIDE_WIDTH = 260;
 const HEIGHT = 600;
 const MARGINS = {top: 0, bottom: 600, left: 0, right: 125};
 const ROSEWIDTH = 350;
@@ -49,6 +49,15 @@ function makeCharts(){
 			.range(["red", "orange", "cyan"]);
 		
 		//Generate fillable glasses
+		
+		//Add a background behind the glasses
+		mapSvg.append('rect')
+			.attr('y', 0)
+			.attr('x', MAP_WIDTH)
+			.attr('height', HEIGHT)
+			.attr('width', MARGINS.right + SIDE_WIDTH)
+			.style('fill', "#DDD")
+
 		
 		//Use these for the mouse over effect
 //		generateWineGlass([minMaxWine.min, minMaxWine.max]);
@@ -231,6 +240,8 @@ function makeCharts(){
 				.style('text-anchor', 'start')
 				.text('Happy');		
 			
+			
+			//Prepare Country Abbreviations using the world map data to use in the rose charts
 			let countryAbbr = [];
 			map_data.features.forEach(c => {
 				switch(c.Country)
@@ -259,7 +270,7 @@ function makeCharts(){
 				}
 			});
 			
-			//Add missing
+			//Add missing abbreviations
 			countryAbbr['Comoros'] = 'COM';
 			countryAbbr["Cote d'Ivoire"] = 'CIV';
 			countryAbbr["Rep. Congo"] = 'COG';
@@ -273,10 +284,14 @@ function makeCharts(){
 			countryAbbr["Malta"] = 'MLT';
 			countryAbbr["Bahrain"] = 'BHR';
 			countryAbbr["Singapore"] = 'SGP';
-			countryAbbr["United States"] = 'USA';
+			countryAbbr["United States"] = 'USA';	
 			
-			
-			
+			//Add a background behind the rose charts
+			mapSvg.append('rect')
+				.attr('y', HEIGHT)
+				.attr('height', MARGINS.bottom)
+				.attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
+				.style('fill', "#CCC")
 			
 			makeRoseCharts(countryAbbr);
 			

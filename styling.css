@@ -32,7 +32,7 @@ h1{
 }
 
 div#div_visuals {
-    background: lightgrey;
+/*    background: lightgrey;*/
     background-clip: content-box;
     width: 100%;
     height: auto;
@@ -52,7 +52,6 @@ div.tooltip {
     height: 60px;
     padding: 2px;
     font: 12px sans-serif;
-    background: #888;
     color: white;
     border: 0px;
     padding-top: 5px;
