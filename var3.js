@@ -9,12 +9,13 @@ window.onload = function(){
 
 
 const MAP_WIDTH = 1000;
-const SIDE_WIDTH = 800;
+const SIDE_WIDTH = 260;
 const HEIGHT = 600;
-const MARGINS = {top: 0, bottom: 1000, left: 0, right: 150};
+const MARGINS = {top: 0, bottom: 500, left: 0, right: 125};
+const DONUTWIDTH = 160;
+const DONUTHEIGHT = 160;
 
 let ext_svg = {};
-
 
 function makeCharts(){
     //Get the data
@@ -47,6 +48,15 @@ function makeCharts(){
 			.range(["red", "orange", "cyan"]);
 		
 		//Generate fillable glasses
+		
+		//Add a background behind the glasses
+		mapSvg.append('rect')
+			.attr('y', 0)
+			.attr('x', MAP_WIDTH)
+			.attr('height', HEIGHT)
+			.attr('width', MARGINS.right + SIDE_WIDTH)
+			.style('fill', "#DDD")
+
 		
 		//Use these for the mouse over effect
 //		generateWineGlass([minMaxWine.min, minMaxWine.max]);
@@ -128,7 +138,7 @@ function makeCharts(){
 			mapSvg.append('rect')
 				.attr('width', MAP_WIDTH)
 				.attr('height', HEIGHT)
-				.style('fill', 'cornflowerblue');
+				.style('fill', '#71A6D2');
 						
 			//Draw countries onto map
 			mapSvg.append('g')
@@ -227,137 +237,372 @@ function makeCharts(){
 				.attr('x', MAP_WIDTH + 50)
 				.attr('y', 20)
 				.style('text-anchor', 'start')
-				.text('Happy');					
-			
+				.text('Happy');	
 		});
 			
+        // Functions for generating fillable glasses
+        function updateGlassFill(glassData, fillAmount, label)
+        {
+            glassData.fill.attr('height', glassData.scale(fillAmount))
+                .attr('y', glassData.maxHeight + (glassData.y - glassData.scale(fillAmount)));
+
+            glassData.text.text(label);
+
+        }
+
+        async function generateWineGlass(minmax)
+        {
+            d3.selectAll('#wineglass').remove();
+
+            await d3.xml('wineglass.svg').then((wineGlass) => {
+                mapSvg.node().appendChild(wineGlass.getElementsByTagName('svg')[0]);
+
+
+                let glass = mapSvg.select("#wineglass")
+                    .attr('x', MAP_WIDTH + MARGINS.right + 100)
+                    .attr('y', 50);
+
+                let fill = glass.select('#fill');
+
+                let maxHeight = fill.node().height.baseVal.value;
+                let y = fill.node().y.baseVal.value;
+
+                let wineScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
+
+                let label = mapSvg.append('text')
+                    .attr('x', MAP_WIDTH + MARGINS.right + 125)
+                    .attr('y', 170)
+                    .style('text-anchor', "middle")
+                    .text('100');
+
+                ext_svg.wineGlass = {glass: glass, scale: wineScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
+            });
+        }
+
+        async function generateBeerGlass(minmax)
+        {
+            d3.selectAll('#beerglass').remove();
+
+            await d3.xml('beerglass.svg').then((glassSvg) => {
+                mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
+
+
+                let glass = mapSvg.select("#beerglass")
+                    .attr('x', MAP_WIDTH + MARGINS.right + 100)
+                    .attr('y', 200);
+
+                let fill = glass.select('#fill');
+
+                let maxHeight = fill.node().height.baseVal.value;
+                let y = fill.node().y.baseVal.value;
+
+                let beerScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
+
+                let label = mapSvg.append('text')
+                    .attr('x', MAP_WIDTH + MARGINS.right + 125)
+                    .attr('y', 320)
+                    .style('text-anchor', "middle")
+                    .text('100');
+
+                ext_svg.beerGlass = {glass: glass, scale: beerScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
+            });
+        }
+
+        async function generateMartiniGlass(minmax)
+        {
+            d3.selectAll('#martiniglass').remove();
+
+            await d3.xml('martiniglass.svg').then((glassSvg) => {
+                mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
+
+
+                let glass = mapSvg.select("#martiniglass")
+                    .attr('x', MAP_WIDTH + MARGINS.right + 100)
+                    .attr('y', 350);
+
+                let fill = glass.select('#fill');
+
+                let maxHeight = fill.node().height.baseVal.value;
+                let y = fill.node().y.baseVal.value;
+
+                let spiritScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
+
+                let label = mapSvg.append('text')
+                    .attr('x', MAP_WIDTH + MARGINS.right + 125)
+                    .attr('y', 470)
+                    .style('text-anchor', "middle")
+                    .text('100%');
+
+                ext_svg.martiniGlass = {glass: glass, scale: spiritScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
+            });
+        }
+
+        async function generateSmile(minmax)
+        {
+            d3.selectAll('#smile').remove();
+
+            await d3.xml('smile.svg').then((glassSvg) => {
+                mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
+
+
+                let glass = mapSvg.select("#smile")
+                    .attr('x', MAP_WIDTH + MARGINS.right + 100 - 12.5)
+                    .attr('y', 500);
+
+                let fill = glass.select('#fill');
+
+                let maxHeight = fill.node().height.baseVal.value;
+                let y = fill.node().y.baseVal.value;
+
+                let happinessScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
+
+                let label = mapSvg.append('text')
+                    .attr('x', MAP_WIDTH + MARGINS.right + 125)
+                    .attr('y', 595)
+                    .style('text-anchor', "middle")
+                    .text('100%');
+
+                ext_svg.smile = {glass: glass, scale: happinessScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
+            });
+        }
+
+		//Add a background behind the donut charts
+		mapSvg.append('rect')
+			.attr('y', HEIGHT)
+			.attr('height', MARGINS.bottom)
+			.attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
+			.style('fill', "#CCC");
 		
-		// Functions for generating fillable glasses
-		function updateGlassFill(glassData, fillAmount, label)
-		{
-			glassData.fill.attr('height', glassData.scale(fillAmount))
-					.attr('y', glassData.maxHeight + (glassData.y - glassData.scale(fillAmount)));
-			
-			glassData.text.text(label);
-						
-		}
-
-		async function generateWineGlass(minmax)
-		{
-			d3.selectAll('#wineglass').remove();
-
-			await d3.xml('wineglass.svg').then((wineGlass) => {
-				mapSvg.node().appendChild(wineGlass.getElementsByTagName('svg')[0]);
-
-
-				let glass = mapSvg.select("#wineglass")
-					.attr('x', MAP_WIDTH + MARGINS.right + 100)
-					.attr('y', 50);
-
-				let fill = glass.select('#fill');
-
-				let maxHeight = fill.node().height.baseVal.value;
-				let y = fill.node().y.baseVal.value;
-
-				let wineScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
-				
-				let label = mapSvg.append('text')
-					.attr('x', MAP_WIDTH + MARGINS.right + 125)
-					.attr('y', 170)
-					.style('text-anchor', "middle")
-					.text('100');
-				
-				ext_svg.wineGlass = {glass: glass, scale: wineScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
-			});
-		}
-
-		async function generateBeerGlass(minmax)
-		{
-			d3.selectAll('#beerglass').remove();
-
-			await d3.xml('beerglass.svg').then((glassSvg) => {
-				mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
-
-
-				let glass = mapSvg.select("#beerglass")
-					.attr('x', MAP_WIDTH + MARGINS.right + 100)
-					.attr('y', 200);
-
-				let fill = glass.select('#fill');
-
-				let maxHeight = fill.node().height.baseVal.value;
-				let y = fill.node().y.baseVal.value;
-
-				let beerScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
-
-				let label = mapSvg.append('text')
-					.attr('x', MAP_WIDTH + MARGINS.right + 125)
-					.attr('y', 320)
-					.style('text-anchor', "middle")
-					.text('100');
-				
-				ext_svg.beerGlass = {glass: glass, scale: beerScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
-			});
-		}
-
-		async function generateMartiniGlass(minmax)
-		{
-			d3.selectAll('#martiniglass').remove();
-
-			await d3.xml('martiniglass.svg').then((glassSvg) => {
-				mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
-
-
-				let glass = mapSvg.select("#martiniglass")
-					.attr('x', MAP_WIDTH + MARGINS.right + 100)
-					.attr('y', 350);
-
-				let fill = glass.select('#fill');
-
-				let maxHeight = fill.node().height.baseVal.value;
-				let y = fill.node().y.baseVal.value;
-
-				let spiritScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
-
-				let label = mapSvg.append('text')
-					.attr('x', MAP_WIDTH + MARGINS.right + 125)
-					.attr('y', 470)
-					.style('text-anchor', "middle")
-					.text('100%');
-				
-				ext_svg.martiniGlass = {glass: glass, scale: spiritScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
-			});
-		}
+		mapSvg.append('text')
+				.attr('y', HEIGHT + 25)
+				.attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)/2)
+				.style('text-anchor', 'middle')
+				.style('font-size', '20px')
+				.text("Alcohol Consumption by Region");
 		
-		async function generateSmile(minmax)
-		{
-			d3.selectAll('#smile').remove();
+		buildColourLegend();
+		
+        // Combine data based on alcohol, because its not usable in its current format
+        var regionsByAlcohol2 = d3.nest()
+            .key(function(d) { return d.Region; })
+            .rollup(function(v) { return {
+                Wine_PerCapita: d3.sum(v, function(d) { return d.Wine_PerCapita; }),
+                Beer_PerCapita: d3.sum(v, function(d) { return d.Beer_PerCapita; }),
+                Spirit_PerCapita: d3.sum(v, function(d) { return d.Spirit_PerCapita; })
+            }; })
+            .object(data);
 
-			await d3.xml('smile.svg').then((glassSvg) => {
-				mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
+        // use map to bring the arrays together
+        var regionsByAlcohol3 = Object.keys(regionsByAlcohol2).map(function(key) {
+            return [String(key), regionsByAlcohol2[key]];
+        });
+
+        // put into an array of arrays (because we got a bunch of object arrays that cant be stacked)
+        var regionsByAlcohol4 = [];
+        for (var i = 0; i < regionsByAlcohol3.length; i++) {
+            var temp = {Region: regionsByAlcohol3[i][0], Wine_PerCapita: +regionsByAlcohol3[i][1].Wine_PerCapita, Beer_PerCapita: +regionsByAlcohol3[i][1].Beer_PerCapita, Spirit_PerCapita: +regionsByAlcohol3[i][1].Spirit_PerCapita};
+            regionsByAlcohol4[i] = temp;
+        }
+        regionsByAlcohol4.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+        var countryAlcohol1 = d3.nest()
+            .key(function(d) { return d.Region; })
+            .object(data);
+
+        var countryAlcohol2 = Object.keys(countryAlcohol1).map(function(key) {
+            return [String(key), countryAlcohol1[key]];
+        });
+
+        var easternEurope = countryAlcohol2[0][1];
+        var easternEurope2 = [];
+        for (var i = 0; i < easternEurope.length; i++) {
+            var temp = {Country: easternEurope[i].Country, Wine_PerCapita: +easternEurope[i].Wine_PerCapita, Beer_PerCapita: +easternEurope[i].Beer_PerCapita, Spirit_PerCapita: +easternEurope[i].Spirit_PerCapita};
+            easternEurope2[i] = temp;
+        }
+        easternEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        console.log(easternEurope2);
+        console.log("regionsByAlcohol4", regionsByAlcohol4);
+        var donutData = constructDonutData(regionsByAlcohol4, 0);
+        donutChart(data, donutData, 0, 140, "Central and Eastern Europe");
+
+        var subAfrica = countryAlcohol2[1][1];
+        var subAfrica2 = [];
+        for (var i = 0; i < subAfrica.length; i++) {
+            var temp = {Country: subAfrica[i].Country, Wine_PerCapita: +subAfrica[i].Wine_PerCapita, Beer_PerCapita: +subAfrica[i].Beer_PerCapita, Spirit_PerCapita: +subAfrica[i].Spirit_PerCapita};
+            subAfrica2[i] = temp;
+        }
+        subAfrica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        var donutData = constructDonutData(regionsByAlcohol4, 1);
+        donutChart(data, donutData, 277, 140, "Sub-Saharan Africa");
+
+        var southAmerica = countryAlcohol2[2][1];
+        var southAmerica2 = [];
+        for (var i = 0; i < southAmerica.length; i++) {
+            var temp = {Country: southAmerica[i].Country, Wine_PerCapita: +southAmerica[i].Wine_PerCapita, Beer_PerCapita: +southAmerica[i].Beer_PerCapita, Spirit_PerCapita: +southAmerica[i].Spirit_PerCapita};
+            southAmerica2[i] = temp;
+        }
+        southAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        var donutData = constructDonutData(regionsByAlcohol4, 2);
+        donutChart(data, donutData, 277 * 2, 140, "South America" );
+
+        var aussie = countryAlcohol2[3][1];
+        var aussie2 = [];
+        for (var i = 0; i < aussie.length; i++) {
+            var temp = {Country: aussie[i].Country, Wine_PerCapita: +aussie[i].Wine_PerCapita, Beer_PerCapita: +aussie[i].Beer_PerCapita, Spirit_PerCapita: +aussie[i].Spirit_PerCapita};
+            aussie2[i] = temp;
+        }
+        aussie2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        var donutData = constructDonutData(regionsByAlcohol4, 3);
+        donutChart(data, donutData, 277 * 3, 140, "Australia & New Zealand" );
+
+        var westernEurope = countryAlcohol2[4][1];
+        var westernEurope2 = [];
+        for (var i = 0; i < westernEurope.length; i++) {
+            var temp = {Country: westernEurope[i].Country, Wine_PerCapita: +westernEurope[i].Wine_PerCapita, Beer_PerCapita: +westernEurope[i].Beer_PerCapita, Spirit_PerCapita: +westernEurope[i].Spirit_PerCapita};
+            westernEurope2[i] = temp;
+        }
+        westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        var donutData = constructDonutData(regionsByAlcohol4, 4);
+        donutChart(data, donutData, 0, 360, "Western Europe");
+
+        var middleEast = countryAlcohol2[5][1];
+        var middleEast2 = [];
+        for (var i = 0; i < middleEast.length; i++) {
+            var temp = {Country: middleEast[i].Country, Wine_PerCapita: +middleEast[i].Wine_PerCapita, Beer_PerCapita: +middleEast[i].Beer_PerCapita, Spirit_PerCapita: +middleEast[i].Spirit_PerCapita};
+            middleEast2[i] = temp;
+        }
+        middleEast2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        var donutData = constructDonutData(regionsByAlcohol4, 5);
+        donutChart(data, donutData, 277 * 1, 360, "Middle East & North Africa" );
+
+        var seAsia = countryAlcohol2[6][1];
+        var seAsia2 = [];
+        for (var i = 0; i < seAsia.length; i++) {
+            var temp = {Country: seAsia[i].Country, Wine_PerCapita: +seAsia[i].Wine_PerCapita, Beer_PerCapita: +seAsia[i].Beer_PerCapita, Spirit_PerCapita: +seAsia[i].Spirit_PerCapita};
+            seAsia2[i] = temp;
+        }
+        seAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        var donutData = constructDonutData(regionsByAlcohol4, 6);
+        donutChart(data, donutData, 277 * 2, 360, "South East Asia");
+
+        var northAmerica = countryAlcohol2[7][1];
+        var northAmerica2 = [];
+        for (var i = 0; i < northAmerica.length; i++) {
+            var temp = {Country: northAmerica[i].Country, Wine_PerCapita: +northAmerica[i].Wine_PerCapita, Beer_PerCapita: +northAmerica[i].Beer_PerCapita, Spirit_PerCapita: +northAmerica[i].Spirit_PerCapita};
+            northAmerica2[i] = temp;
+        }
+        northAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        var donutData = constructDonutData(regionsByAlcohol4, 7);
+        donutChart(data, donutData, 277 * 3, 360, "North America");
+
+        var eastAsia = countryAlcohol2[8][1];
+        var eastAsia2 = [];
+        for (var i = 0; i < eastAsia.length; i++) {
+            var temp = {Country: eastAsia[i].Country, Wine_PerCapita: +eastAsia[i].Wine_PerCapita, Beer_PerCapita: +eastAsia[i].Beer_PerCapita, Spirit_PerCapita: +eastAsia[i].Spirit_PerCapita};
+            eastAsia2[i] = temp;
+        }
+        eastAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+        var donutData = constructDonutData(regionsByAlcohol4, 8);
+        donutChart(data, donutData, 277 * 4, 360, "Eastern Asia");
+    }
 
 
-				let glass = mapSvg.select("#smile")
-					.attr('x', MAP_WIDTH + MARGINS.right + 100 - 12.5)
-					.attr('y', 500);
 
-				let fill = glass.select('#fill');
+    function constructDonutData(regionArray, regionIndex){
+        var donutData = [{alcohol:(d3.keys(regionArray[regionIndex])[1]), consumption:(d3.values(regionArray[regionIndex])[1])},
+            {alcohol:(d3.keys(regionArray[regionIndex])[2]), consumption:(d3.values(regionArray[regionIndex])[2])},
+            {alcohol:(d3.keys(regionArray[regionIndex])[3]), consumption:(d3.values(regionArray[regionIndex])[3])}
+        ];
+        return donutData;
+    }
 
-				let maxHeight = fill.node().height.baseVal.value;
-				let y = fill.node().y.baseVal.value;
+    function buildColourLegend(){
 
-				let happinessScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
+        var legendSvg = d3.select("svg");
+        var legendX =  1000 + 120;
+        var legendY = HEIGHT + 140 - DONUTHEIGHT / 2;
 
-				let label = mapSvg.append('text')
-					.attr('x', MAP_WIDTH + MARGINS.right + 125)
-					.attr('y', 595)
-					.style('text-anchor', "middle")
-					.text('100%');
-				
-				ext_svg.smile = {glass: glass, scale: happinessScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
-			});
-		}
+        legendSvg.append("rect")
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("x", legendX)
+            .attr("y", legendY)
+            .style("fill", "#5c0010");
+        legendSvg.append("text")
+            .attr("x", legendX + 40)
+            .attr("y", legendY + 15)
+            .attr("dy", ".35em")
+            .text("Wine Consumption");
 
-	}
+        legendSvg.append("rect")
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("x", legendX)
+            .attr("y", legendY+60)
+            .style("fill", "#d28816");
+        legendSvg.append("text")
+            .attr("x", legendX + 40)
+            .attr("y", legendY + 75)
+            .attr("dy", ".35em")
+            .text("Beer Consumption");
+
+        legendSvg.append("rect")
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("x", legendX)
+            .attr("y", legendY+120)
+            .style("fill", "#00CCCC");
+        legendSvg.append("text")
+            .attr("x", legendX + 40)
+            .attr("y", legendY + 135)
+            .attr("dy", ".35em")
+            .text("Spirits Consumption");
+    }
+
+/*
+	Donut Chart reference: https://scrimba.com/p/pPrZLhD/c6ZPkH3
+
+*/
+
+    function donutChart(dataset, customizedData, leftOffset, topOffset, regionTitle) {
+        var data = customizedData;
+
+        var donutSvg = d3.select("svg"),
+            width = DONUTWIDTH,
+            height = DONUTHEIGHT,
+            margin = {top: 0, right: 20, bottom: 40, left: -40},
+            titlepadding = 100,
+            chartWidth = width + margin.left + margin.right,
+            chartHeight= height + margin.top + margin.bottom;
+            let g = donutSvg.append("g").attr("transform", "translate(" + (chartWidth + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
+
+        var radius = 85;
+
+        var color = d3.scaleOrdinal(["#5c0010", "#d28816", "#00CCCC"]);
+
+        var donut = d3.pie().value(function(d) {
+            return d.consumption;
+        });
+
+        var path = d3.arc()
+            .outerRadius(radius)
+            .innerRadius(30);
+
+        var arc = g.selectAll()
+            .data(donut(data))
+            .enter()
+            .append("g");
+
+        arc.append("path")
+            .attr("d", path)
+            .attr("fill", function(d) { return color(d.data.consumption); });
+
+        donutSvg.append("text")
+            .attr("x", chartWidth + leftOffset)
+            .attr("y", HEIGHT + topOffset + titlepadding)
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .text(function(d) { return regionTitle; })
+    }
 }
 

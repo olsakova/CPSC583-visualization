@@ -9,9 +9,9 @@ window.onload = function(){
 
 
 const MAP_WIDTH = 1000;
+const SIDE_WIDTH = 260;
 const HEIGHT = 600;
-const MARGINS = {top: 0, bottom: 1000, left: 0, right: 150};
-const SIDE_WIDTH = 250;
+const MARGINS = {top: 0, bottom: 600, left: 0, right: 125};
 
 let ext_svg = {};
 
@@ -42,10 +42,20 @@ function makeCharts(){
 					 	max: d3.max(data, d => {return parseFloat(d.Spirit_PerCapita);})};
 		
 		const colorScale = d3.scaleLinear()
+//			.domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min)/2, minMaxHappiness.max])
 			.domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min)/2, minMaxHappiness.max])
 			.range(["red", "orange", "cyan"]);
 		
 		//Generate fillable glasses
+		
+		//Add a background behind the glasses
+		mapSvg.append('rect')
+			.attr('y', 0)
+			.attr('x', MAP_WIDTH)
+			.attr('height', HEIGHT)
+			.attr('width', MARGINS.right + SIDE_WIDTH)
+			.style('fill', "#DDD")
+
 		
 		//Use these for the mouse over effect
 //		generateWineGlass([minMaxWine.min, minMaxWine.max]);
@@ -127,7 +137,7 @@ function makeCharts(){
 			mapSvg.append('rect')
 				.attr('width', MAP_WIDTH)
 				.attr('height', HEIGHT)
-				.style('fill', 'cornflowerblue');
+				.style('fill', '#71A6D2');
 						
 			//Draw countries onto map
 			mapSvg.append('g')
@@ -226,7 +236,73 @@ function makeCharts(){
 				.attr('x', MAP_WIDTH + 50)
 				.attr('y', 20)
 				.style('text-anchor', 'start')
-				.text('Happy');			
+				.text('Happy');		
+			
+			
+			//Prepare Country Abbreviations using the world map data to use in the rose charts
+			let countryAbbr = [];
+			map_data.features.forEach(c => {
+				switch(c.Country)
+				{
+					case "Cote d'Ivoire":
+						countryAbbr['Ivory Coast'] = c.id;
+						break;
+					case "Dem. Rep. Congo":
+						countryAbbr['Democratic Republic of the Congo'] = c.id;
+						break;
+					case "Rep. Congo":
+						countryAbbr['Republic of the Congo'] = c.id;
+						break;
+					case "Russian Federation":
+						countryAbbr['Russia'] = c.id;
+						break;
+					case 'United Kingdom':
+						countryAbbr['England'] = c.id;
+						break;
+					case 'United States':
+						countryAbbr['USA'] = c.id;
+						break;
+					default:
+						countryAbbr[c.properties.name] = c.id;
+					break;	
+				}
+			});
+			
+			//Add missing abbreviations
+			countryAbbr['Comoros'] = 'COM';
+			countryAbbr["Cote d'Ivoire"] = 'CIV';
+			countryAbbr["Rep. Congo"] = 'COG';
+			countryAbbr["Dem. Rep. Congo"] = 'COD';
+			countryAbbr["Dem. Rep. Congo"] = 'COD';
+			countryAbbr["Mauritius"] = 'MUS';
+			countryAbbr["Tanzania"] = 'TZA';
+			countryAbbr["Russian Federation"] = 'RUS';
+			countryAbbr["Serbia"] = 'SRB';
+			countryAbbr["United Kingdom"] = 'GBR';
+			countryAbbr["Malta"] = 'MLT';
+			countryAbbr["Bahrain"] = 'BHR';
+			countryAbbr["Singapore"] = 'SGP';
+			countryAbbr["United States"] = 'USA';	
+			
+			//Add a background behind the rose charts
+			mapSvg.append('rect')
+				.attr('y', HEIGHT)
+				.attr('height', MARGINS.bottom)
+				.attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
+				.style('fill', "#CCC")
+			
+			mapSvg.append('text')
+				.attr('y', HEIGHT + 25)
+				.attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)/2)
+				.style('text-anchor', 'middle')
+				.text("Alcohol Consumption by Region");
+//			mapSvg.append('text')
+//				.attr('y', HEIGHT + 40)
+//				.attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)/2)
+//				.style('text-anchor', 'middle')
+//				.style('font-size', '12px')
+//				.text('(litres per capita per year)');
+						
 		});
 		
 		// Functions for generating fillable glasses
@@ -354,14 +430,6 @@ function makeCharts(){
 				ext_svg.smile = {glass: glass, scale: happinessScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
 			});
 		}
-		
-		
-		function generateBarCharts()
-		{
-			
-		}
-		
-		
 	}
 }
 
