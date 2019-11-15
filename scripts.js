@@ -624,7 +624,17 @@ function makeCharts(){
 					.endAngle(function(d) { return x(country ? d.data.Country : d.data.Region) + x.bandwidth(); })
 					.padAngle(0.01)
 					.padRadius(innerRadius))
-				.attr("transform", function() {return "rotate("+ angleOffset + ")"});
+				.attr("transform", function() {return "rotate("+ angleOffset + ")"})
+				//Tooltips!
+				.on('mousemove',function(d){
+					div.html('<span class="title">' + (country ? d.data.Country : d.data.Region) + "</span></br> Wine: " + d.data.Wine_PerCapita +  "</br>Spirits: " + d.data.Spirit_PerCapita + "</br> Beer: " +d.data.Beer_PerCapita)
+						.style("opacity", 1)
+						.style("left", (d3.event.pageX) - div.node().clientWidth/2 + "px")
+						.style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
+				})
+				.on('mouseout', function(d){
+					div.style("opacity", 0)
+				});
 
 			g.append('text')
 				.attr('y', -150)
