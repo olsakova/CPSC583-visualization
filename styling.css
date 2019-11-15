@@ -28,7 +28,7 @@ h1{
 }
 
 div#div_visuals {
-    background: lightgrey;
+    background: white;
     background-clip: content-box;
     width: 100%;
     height: auto;

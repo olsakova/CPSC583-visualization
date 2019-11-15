@@ -447,8 +447,8 @@ function makeCharts(){
 			var temp = {Country: middleEast[i].Country, Wine_PerCapita: +middleEast[i].Wine_PerCapita, Beer_PerCapita: +middleEast[i].Beer_PerCapita, Spirit_PerCapita: +middleEast[i].Spirit_PerCapita};
 			middleEast2[i] = temp;
 		}
-		westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-		roseChart(data, westernEurope2, -500, 650, false, true, 600);
+		middleEast2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+		roseChart(data, middleEast2, -500, 650, false, true, 600);
 
 		var seAsia = countryAlcohol2[6][1];
 		var seAsia2 = [];
