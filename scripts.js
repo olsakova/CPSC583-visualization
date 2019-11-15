@@ -622,7 +622,9 @@ function makeCharts(){
 				.attr("transform", function(d) { return "rotate(" + ((x(country ? d.Country : d.Region) + x.bandwidth() / 2) * 180 / Math.PI - (90-angleOffset)) + ")translate(" + (outerRadius+30) + ",0)"; });
 
 			label.append("text")
-				.attr("transform", function(d) { return (x(country ? d.Country : d.Region) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ?  "rotate(90)translate(0,16)": "rotate(-90)translate(0,-9)"; })
+				.attr("transform", function(d) { 
+				return (x(country ? d.Country : d.Region) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) <= Math.PI ?  "rotate(90)translate(0,16)": "rotate(-90)translate(0,-9)"; 
+			})
 				.text(function(d) { return country ? d.Country : d.Region; })
 				.style("font-size",12);
 

@@ -57,6 +57,7 @@ div.tooltip {
     padding-top: 5px;
     border-radius: 4px;
     pointer-events: none;
+	background: #888;
 }
 
 div.tooltip .title{
