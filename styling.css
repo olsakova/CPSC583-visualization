@@ -17,6 +17,10 @@ body {
     padding: 20px;
 }
 
+body.none {
+    padding: 5px;
+}
+
 h1{
     font-family: "Major Mono Display", sans-serif;
     font-size: 3em;
@@ -35,6 +39,10 @@ div#div_visuals {
     min-height: auto;
     box-sizing: border-box;
     padding: 10px;
+}
+
+div#div_visuals.var1 {
+    padding: 0;
 }
 
 div.tooltip {
