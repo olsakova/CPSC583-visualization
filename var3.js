@@ -55,7 +55,7 @@ function makeCharts(){
 			.attr('x', MAP_WIDTH)
 			.attr('height', HEIGHT)
 			.attr('width', MARGINS.right + SIDE_WIDTH)
-			.style('fill', "#DDD")
+			.style('fill', "#DDD");
 
 		
 		//Use these for the mouse over effect

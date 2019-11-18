@@ -19,8 +19,8 @@ const MAP_WIDTH = 1000;
 const SIDE_WIDTH = 260;
 const HEIGHT = 600;
 const MARGINS = {top: 0, bottom: 525, left: 0, right: 125};
-const DONUTWIDTH = 160;
-const DONUTHEIGHT = 160;
+const BARCHART_WIDTH = 160;
+const BARCHART_HEIGHT = 160;
 
 function makeCharts(){
     //Get the data
@@ -50,6 +50,14 @@ function makeCharts(){
 		const colorScale = d3.scaleLinear()
 			.domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min)/2, minMaxHappiness.max])
 			.range(["red", "orange", "cyan"]);
+		
+		//Add a background behind the glasses
+		mapSvg.append('rect')
+			.attr('y', 0)
+			.attr('x', MAP_WIDTH)
+			.attr('height', HEIGHT)
+			.attr('width', MARGINS.right + SIDE_WIDTH)
+			.style('fill', "#DDD");
 		
 		//Generate fillable glasses
 		
@@ -361,7 +369,7 @@ function makeCharts(){
 			});
 		}
 
-		//Add a background behind the donut charts
+		//Add a background behind the charts
 		mapSvg.append('rect')
 			.attr('y', HEIGHT)
 			.attr('height', MARGINS.bottom)
@@ -423,7 +431,7 @@ function makeCharts(){
 		console.log(easternEurope2);
 		console.log("regionsByAlcohol4", regionsByAlcohol4);
 		var donutData = constructDonutData(regionsByAlcohol4, 0);
-		donutChart(data, donutData, 0, 160, "Central and Eastern Europe");
+		barChart(data, donutData, 0, 160, "Central and Eastern Europe");
 
 		var subAfrica = countryAlcohol2[1][1];
 		var subAfrica2 = [];
@@ -433,7 +441,7 @@ function makeCharts(){
 		}
 		subAfrica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 		var donutData = constructDonutData(regionsByAlcohol4, 1);
-		donutChart(data, donutData, 277, 160, "Sub-Saharan Africa");
+		barChart(data, donutData, 277, 160, "Sub-Saharan Africa");
 
 		var southAmerica = countryAlcohol2[2][1];
 		var southAmerica2 = [];
@@ -443,7 +451,7 @@ function makeCharts(){
 		}
 		southAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 		var donutData = constructDonutData(regionsByAlcohol4, 2);
-		donutChart(data, donutData, 277 * 2, 160, "South America" );
+		barChart(data, donutData, 277 * 2, 160, "South America" );
 
 		var aussie = countryAlcohol2[3][1];
 		var aussie2 = [];
@@ -453,7 +461,7 @@ function makeCharts(){
 		}
 		aussie2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 		var donutData = constructDonutData(regionsByAlcohol4, 3);
-		donutChart(data, donutData, 277 * 3, 160, "Australia & New Zealand" );
+		barChart(data, donutData, 277 * 3, 160, "Australia & New Zealand" );
 
 		var westernEurope = countryAlcohol2[4][1];
 		var westernEurope2 = [];
@@ -463,7 +471,7 @@ function makeCharts(){
 		}
 		westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 		var donutData = constructDonutData(regionsByAlcohol4, 4);
-		donutChart(data, donutData, 0, 380, "Western Europe");
+		barChart(data, donutData, 0, 380, "Western Europe");
 
 		var middleEast = countryAlcohol2[5][1];
 		var middleEast2 = [];
@@ -473,7 +481,7 @@ function makeCharts(){
 		}
 		middleEast2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 		var donutData = constructDonutData(regionsByAlcohol4, 5);
-		donutChart(data, donutData, 277 * 1, 380, "Middle East & North Africa" );
+		barChart(data, donutData, 277 * 1, 380, "Middle East & North Africa" );
 
 		var seAsia = countryAlcohol2[6][1];
 		var seAsia2 = [];
@@ -483,7 +491,7 @@ function makeCharts(){
 		}
 		seAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 		var donutData = constructDonutData(regionsByAlcohol4, 6);
-		donutChart(data, donutData, 277 * 2, 380, "South East Asia");
+		barChart(data, donutData, 277 * 2, 380, "South East Asia");
 
 		var northAmerica = countryAlcohol2[7][1];
 		var northAmerica2 = [];
@@ -493,7 +501,7 @@ function makeCharts(){
 		}
 		northAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 		var donutData = constructDonutData(regionsByAlcohol4, 7);
-		donutChart(data, donutData, 277 * 3, 380, "North America");
+		barChart(data, donutData, 277 * 3, 380, "North America");
 
 		var eastAsia = countryAlcohol2[8][1];
 		var eastAsia2 = [];
@@ -503,7 +511,7 @@ function makeCharts(){
 		}
 		eastAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
 		var donutData = constructDonutData(regionsByAlcohol4, 8);
-		donutChart(data, donutData, 277 * 4, 380, "Eastern Asia");
+		barChart(data, donutData, 277 * 4, 380, "Eastern Asia");
 	}
 
 
@@ -520,7 +528,7 @@ function makeCharts(){
 
 		var legendSvg = d3.select("svg");
 		var legendX =  1000 + 120;
-		var legendY = HEIGHT + 160 - DONUTHEIGHT / 2;
+		var legendY = HEIGHT + 160 - BARCHART_HEIGHT / 2;
 
 		legendSvg.append("rect")
 			.attr("width", 40)
@@ -564,13 +572,13 @@ function makeCharts(){
 
     */
     //reused donut region, good stuff
-	function donutChart(dataset, customizedData, leftOffset, topOffset, regionTitle) {
+	function barChart(dataset, customizedData, leftOffset, topOffset, regionTitle) {
 		var data = customizedData;
 		//var data = dataset;
 
 		var rectSvg = d3.select("svg"),
-			width = DONUTWIDTH,
-			height = DONUTHEIGHT,
+			width = BARCHART_WIDTH,
+			height = BARCHART_HEIGHT,
 			margin = {top: 0, right: 20, bottom: 40, left: -40},
 			titlepadding = 100,
 			chartWidth = width + margin.left + margin.right,
@@ -580,8 +588,8 @@ function makeCharts(){
 		var color = d3.scaleOrdinal(["#5c0010", "#d28816", "#00CCCC"]);
 
 		const yScale = d3.scaleLinear()
-            .domain([0, 5000]) //idk if this works, max should be here im guessing
-			.range([height, 0]) //should it be zero or the containmanet to the chart?
+            .domain([0, 5000])
+			.range([height, 0])
 		const xScale = d3.scaleBand()
 			.range([0,width])
 			.domain(["Wine_PerCapita","Beer_PerCapita","Spirit_PerCapita"])
