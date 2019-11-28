@@ -14,240 +14,287 @@ const HEIGHT = 600;
 const MARGINS = {top: 0, bottom: 500, left: 0, right: 125};
 const DONUTWIDTH = 160;
 const DONUTHEIGHT = 160;
+const ROSEWIDTH = 500;
+const ROSEHEIGHT = 450;
 
 let ext_svg = {};
 
-function makeCharts(){
+function makeCharts() {
     //Get the data
     d3.csv("HappinessAlcoholConsumption.csv").then(useTheData)
 
     // Use the data!
     function useTheData(data) {
-		let mapSvg = d3.select('#map')
-					.attr('width', MAP_WIDTH + MARGINS.left + MARGINS.right + SIDE_WIDTH)
-					.attr('height', HEIGHT + MARGINS.top + MARGINS.bottom);
-		
-		const projection = d3.geoMercator()
-			.scale(130)
-			.translate( [(MAP_WIDTH / 2), 400]);
+        let mapSvg = d3.select('#map')
+            .attr('width', MAP_WIDTH + MARGINS.left + MARGINS.right + SIDE_WIDTH)
+            .attr('height', HEIGHT + MARGINS.top + MARGINS.bottom);
 
-		const path = d3.geoPath().projection(projection);
-		
-		minMaxHappiness = {	min: d3.min(data, d => {return parseFloat(d.HappinessScore);}),
-					 	max: d3.max(data, d => {return parseFloat(d.HappinessScore);})};	
-		minMaxWine = {	min: d3.min(data, d => {return parseFloat(d.Wine_PerCapita);}),
-					 	max: d3.max(data, d => {return parseFloat(d.Wine_PerCapita);})};
-		minMaxBeer = {	min: d3.min(data, d => {return parseFloat(d.Beer_PerCapita);}),
-					 	max: d3.max(data, d => {return parseFloat(d.Beer_PerCapita);})};
-		minMaxSpirits = {	min: d3.min(data, d => {return parseFloat(d.Spirit_PerCapita);}),
-					 	max: d3.max(data, d => {return parseFloat(d.Spirit_PerCapita);})};
-		
-		const colorScale = d3.scaleLinear()
-//			.domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min)/2, minMaxHappiness.max])
-			.domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min)/2, minMaxHappiness.max])
-			.range(["red", "orange", "cyan"]);
-		
-		//Generate fillable glasses
-		
-		//Add a background behind the glasses
-		mapSvg.append('rect')
-			.attr('y', 0)
-			.attr('x', MAP_WIDTH)
-			.attr('height', HEIGHT)
-			.attr('width', MARGINS.right + SIDE_WIDTH)
-			.style('fill', "#DDD");
+        const projection = d3.geoMercator()
+            .scale(130)
+            .translate( [(MAP_WIDTH / 2), 400]);
 
-		
-		//Use these for the mouse over effect
+        const path = d3.geoPath().projection(projection);
+
+        minMaxHappiness = {	min: d3.min(data, d => {return parseFloat(d.HappinessScore);}),
+            max: d3.max(data, d => {return parseFloat(d.HappinessScore);})};
+        minMaxWine = {	min: d3.min(data, d => {return parseFloat(d.Wine_PerCapita);}),
+            max: d3.max(data, d => {return parseFloat(d.Wine_PerCapita);})};
+        minMaxBeer = {	min: d3.min(data, d => {return parseFloat(d.Beer_PerCapita);}),
+            max: d3.max(data, d => {return parseFloat(d.Beer_PerCapita);})};
+        minMaxSpirits = {	min: d3.min(data, d => {return parseFloat(d.Spirit_PerCapita);}),
+            max: d3.max(data, d => {return parseFloat(d.Spirit_PerCapita);})};
+
+        const colorScale = d3.scaleLinear()
+        //			.domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min)/2, minMaxHappiness.max])
+            .domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min) / 2, minMaxHappiness.max])
+            .range(["red", "orange", "cyan"]);
+
+        //Generate fillable glasses
+
+        //Add a background behind the glasses
+        mapSvg.append('rect')
+            .attr('y', 0)
+            .attr('x', MAP_WIDTH)
+            .attr('height', HEIGHT)
+            .attr('width', MARGINS.right + SIDE_WIDTH)
+            .style('fill', "#DDD");
+
+
+        //Use these for the mouse over effect
 //		generateWineGlass([minMaxWine.min, minMaxWine.max]);
 //		generateBeerGlass([minMaxBeer.min, minMaxBeer.max]);
 //		generateMartiniGlass([minMaxSpirits.min, minMaxSpirits.max]);
-		
-		//Calculate avg for world summary
-		let avgWine = d3.mean(data, d => {return d.Wine_PerCapita; }); 
-		let avgBeer = d3.mean(data, d => {return d.Beer_PerCapita; }); 
-		let avgSpirits = d3.mean(data, d => {return d.Spirit_PerCapita; });
-		let avgHappiness = d3.mean(data, d => {return d.HappinessScore;});
-		
-		//Use these for the world avg
-		generateWineGlass([minMaxWine.min, minMaxWine.max]).then(() => {updateGlassFill(ext_svg.wineGlass, avgWine, avgWine.toFixed(2));});
-		generateBeerGlass([minMaxBeer.min, minMaxBeer.max]).then(() => {updateGlassFill(ext_svg.beerGlass, avgBeer, avgBeer.toFixed(2));});
-		generateMartiniGlass([minMaxSpirits.min,minMaxSpirits.max]).then(() => {updateGlassFill(ext_svg.martiniGlass, avgSpirits, avgSpirits.toFixed(2));});
-		generateSmile([minMaxHappiness.min, minMaxHappiness.max]).then(() => {
-				updateGlassFill(ext_svg.smile, avgHappiness, avgHappiness.toFixed(2) +'/10'); 
-			  	ext_svg.smile.fill.style('fill', colorScale(avgHappiness));
-		});
-		
-		mapSvg.append('text')
-			.attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
-			.attr('y', 20)
-			.style('text-anchor', 'middle')
-			.text('Golbal Average');
-		mapSvg.append('text')
-			.attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
-			.attr('y', 35)
-			.style('text-anchor', 'middle')
-			.style('font-size', '12px')
-			.text('(litres per capita per year)');
-		
-		
-		let HACData = {};
 
-		data.forEach(d => {
-			//Special case remappings for countries that have different names between our data and the map data
-			switch(d.Country)
-			{
-				case "Cote d'Ivoire":
-					HACData['Ivory Coast'] = d;
-					break;
-				case "Dem. Rep. Congo":
-					HACData['Democratic Republic of the Congo'] = d;
-					break;
-				case "Rep. Congo":
-					HACData['Republic of the Congo'] = d;
-					break;
-				case "Russian Federation":
-					HACData['Russia'] = d;
-					break;
-				case 'United Kingdom':
-					HACData['England'] = d;
-					break;
-				case 'United States':
-					HACData['USA'] = d;
-					break;
-				default:
-				HACData[d.Country] = d;
-				break;	
-			}
-			
-		})
+        //Calculate avg for world summary
+        let avgWine = d3.mean(data, d => {return d.Wine_PerCapita; });
+        let avgBeer = d3.mean(data, d => {return d.Beer_PerCapita; });
+        let avgSpirits = d3.mean(data, d => {return d.Spirit_PerCapita; });
+        let avgHappiness = d3.mean(data, d => {return d.HappinessScore;});
 
-		var div = d3.select("body").append("div")
-			.attr("class", "tooltip")
-			.style("opacity", 0);
+        //Use these for the world avg
+        generateWineGlass([minMaxWine.min, minMaxWine.max]).then(() => {updateGlassFill(ext_svg.wineGlass, avgWine, avgWine.toFixed(2));});
+        generateBeerGlass([minMaxBeer.min, minMaxBeer.max]).then(() => {updateGlassFill(ext_svg.beerGlass, avgBeer, avgBeer.toFixed(2));});
+        generateMartiniGlass([minMaxSpirits.min,minMaxSpirits.max]).then(() => {updateGlassFill(ext_svg.martiniGlass, avgSpirits, avgSpirits.toFixed(2));});
+        generateSmile([minMaxHappiness.min, minMaxHappiness.max]).then(() => {
+            updateGlassFill(ext_svg.smile, avgHappiness, avgHappiness.toFixed(2) +'/10');
+            ext_svg.smile.fill.style('fill', colorScale(avgHappiness));
+        });
 
-		d3.json('world_countries.json').then((map_data) => {
-			map_data.features.forEach( d => {
-				d.happiness = (HACData[d.properties.name] || {HappinessScore: null}).HappinessScore
-				d.beer = (HACData[d.properties.name] || {Beer_PerCapita: null}).Beer_PerCapita
-				d.spirit = (HACData[d.properties.name] || {Spirit_PerCapita: null}).Spirit_PerCapita
-				d.wine = (HACData[d.properties.name] || {Wine_PerCapita: null}).Wine_PerCapita
-			});
-			
-			//Draw map background
-			mapSvg.append('rect')
-				.attr('width', MAP_WIDTH)
-				.attr('height', HEIGHT)
-				.style('fill', '#71A6D2');
-						
-			//Draw countries onto map
-			mapSvg.append('g')
-				.attr('class', 'countries')
-				.selectAll('path')
-				.data(map_data.features)
-				.enter()
-				.append('path')
-				.attr('class', d => {return 'country-' + d.id;})
-				.attr('d', path)
-				.style('fill', d => {return d.happiness ? colorScale(parseFloat(d.happiness)) : 'white';})
-				.style('opacity', d => {return d.happiness ? 1.0 : 0.6;})
-				.style('stroke', 'black')
-				.style('stroke-width', 0.3)
-				//Tooltips!
-				.on('mousemove',function(d){
-				
-					if(d.happiness)
-					{
-						div.html('<span class="title">' + d.properties.name + "</span></br> Wine: " + d.wine +  "</br>Spirits: " + d.spirit + "</br> Beer: " +d.beer)
-							.style("opacity", 1)
-							.style("left", (d3.event.pageX) - div.node().clientWidth/2 + "px")
-							.style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
-							
-						//Update glassses fill levels
+        mapSvg.append('text')
+            .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
+            .attr('y', 20)
+            .style('text-anchor', 'middle')
+            .text('Global Average');
+        mapSvg.append('text')
+            .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
+            .attr('y', 35)
+            .style('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .text('(litres per capita per year)');
+
+
+        let HACData = {};
+
+        data.forEach(d => {
+            //Special case remappings for countries that have different names between our data and the map data
+            switch (d.Country) {
+                case "Cote d'Ivoire":
+                    HACData['Ivory Coast'] = d;
+                    break;
+                case "Dem. Rep. Congo":
+                    HACData['Democratic Republic of the Congo'] = d;
+                    break;
+                case "Rep. Congo":
+                    HACData['Republic of the Congo'] = d;
+                    break;
+                case "Russian Federation":
+                    HACData['Russia'] = d;
+                    break;
+                case 'United Kingdom':
+                    HACData['England'] = d;
+                    break;
+                case 'United States':
+                    HACData['USA'] = d;
+                    break;
+                default:
+                    HACData[d.Country] = d;
+                    break;
+            }
+
+        });
+
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        d3.json('world_countries.json').then((map_data) => {
+            map_data.features.forEach(d => {
+                d.happiness = (HACData[d.properties.name] || {HappinessScore: null}).HappinessScore
+                d.beer = (HACData[d.properties.name] || {Beer_PerCapita: null}).Beer_PerCapita
+                d.spirit = (HACData[d.properties.name] || {Spirit_PerCapita: null}).Spirit_PerCapita
+                d.wine = (HACData[d.properties.name] || {Wine_PerCapita: null}).Wine_PerCapita
+            });
+
+            //Draw map background
+            mapSvg.append('rect')
+                .attr('width', MAP_WIDTH)
+                .attr('height', HEIGHT)
+                .style('fill', '#71A6D2');
+
+            //Draw countries onto map
+            mapSvg.append('g')
+                .attr('class', 'countries')
+                .selectAll('path')
+                .data(map_data.features)
+                .enter()
+                .append('path')
+                .attr('class', d => {return 'country-' + d.id;})
+                .attr('d', path)
+                .style('fill', d => {return d.happiness ? colorScale(parseFloat(d.happiness)) : 'white';})
+                .style('opacity', d => {return d.happiness ? 1.0 : 0.6;})
+                .style('stroke', 'black')
+                .style('stroke-width', 0.3)
+
+                //Tooltips!
+                .on('mousemove', function (d) {
+
+                    if (d.happiness)
+                    {
+                        div.html('<span class="title">' + d.properties.name + "</span></br> Wine: " + d.wine + "</br>Spirits: " + d.spirit + "</br> Beer: " + d.beer)
+                            .style("opacity", 1)
+                            .style("left", (d3.event.pageX) - div.node().clientWidth / 2 + "px")
+                            .style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
+
+                        //Update glassses fill levels
 //						updateGlassFill(ext_svg.wineGlass, d.wine);
 //						updateGlassFill(ext_svg.beerGlass, d.beer);
 //						updateGlassFill(ext_svg.martiniGlass, d.spirit);
-						
-					}
-				})
-				.on('mouseout', function(d){
-					div.style("opacity", 0)
-				});
-		
-		
-			
-			let mapLegendLinearScale = d3.scaleLinear()
-										.domain([minMaxHappiness.min, minMaxHappiness.max])
-										.range([HEIGHT - 20, 20]);
-			
-			//Draw map legend
-			let legend = mapSvg.append('g');
-			legend.append('rect')
-				.attr('x', MAP_WIDTH)
-				.attr('width', 10)
-				.attr('height', HEIGHT)
-				.attr('class', 'legend')
-				.attr('transform', `rotate(180, ${MAP_WIDTH + 10 / 2}, ${HEIGHT / 2})`) //Flip scale so Happy is on top
-				.attr('fill', 'url("#gradient")');
-			
-			//Build Gradient
-			/*
-				References: https://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
-			*/
-			
-			let defs = mapSvg.append('defs');
-    		let linearGradient = defs.append("linearGradient")
-									.attr("id", "gradient")
-									.attr('gradientTransform','rotate(90)');
-			 linearGradient.selectAll("stop")
-				.data( colorScale.range() )
-				.enter().append("stop")
-				.attr("offset", function(d,i) { return i/(colorScale.range().length-1); })
-				.attr("stop-color", function(d) { return d; });
-			
-			//Legend axis
-			legend.selectAll('text.legend')
-				.data(colorScale.nice().ticks(10))
-				.enter()
-				.append('text')
-				.attr('class', 'legend')
-				.attr('x', MAP_WIDTH + 15)
-				.attr('y', (d) => {return mapLegendLinearScale(d);})
-				.style('text-anchor', 'start')
-				.text((d) => {return d;});
-			
-			//Legend label
-			legend.append('text')
-				.attr('class', 'legend-label')
-				.attr('x', MAP_WIDTH + 70)
-				.attr('y', HEIGHT / 2)
-				.style('text-anchor', 'middle')
-				.text('Happiness Score')
-				.attr('transform', `rotate(90, ${MAP_WIDTH + 70}, ${HEIGHT/2})`);
-			
-			legend.append('text')
-				.attr('class', 'legend-label')
-				.attr('x', MAP_WIDTH + 50)
-				.attr('y', HEIGHT - 10)
-				.style('text-anchor', 'start')
-				.text('Unhappy');
-			
-			legend.append('text')
-				.attr('class', 'legend-label')
-				.attr('x', MAP_WIDTH + 50)
-				.attr('y', 20)
-				.style('text-anchor', 'start')
-				.text('Happy');	
-		});
-			
+
+                    }
+                })
+                .on('mouseout', function (d) {
+                    div.style("opacity", 0)
+                });
+
+
+            let mapLegendLinearScale = d3.scaleLinear()
+                .domain([minMaxHappiness.min, minMaxHappiness.max])
+                .range([HEIGHT - 20, 20]);
+
+            //Draw map legend
+            let legend = mapSvg.append('g');
+            legend.append('rect')
+                .attr('x', MAP_WIDTH)
+                .attr('width', 10)
+                .attr('height', HEIGHT)
+                .attr('class', 'legend')
+                .attr('transform', `rotate(180, ${MAP_WIDTH + 10 / 2}, ${HEIGHT / 2})`) //Flip scale so Happy is on top
+                .attr('fill', 'url("#gradient")');
+
+            //Build Gradient
+            /*
+                References: https://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
+            */
+
+            let defs = mapSvg.append('defs');
+            let linearGradient = defs.append("linearGradient")
+                                    .attr("id", "gradient")
+                                    .attr('gradientTransform', 'rotate(90)');
+            linearGradient.selectAll("stop")
+                .data( colorScale.range() )
+                .enter().append("stop")
+                .attr("offset", function(d,i) { return i/(colorScale.range().length-1); })
+                .attr("stop-color", function(d) { return d; });
+
+            //Legend axis
+            legend.selectAll('text.legend')
+                .data(colorScale.nice().ticks(10))
+                .enter()
+                .append('text')
+                .attr('class', 'legend')
+                .attr('x', MAP_WIDTH + 15)
+                .attr('y', (d) => {return mapLegendLinearScale(d);})
+                .style('text-anchor', 'start')
+                .text((d) => {return d;});
+
+            //Legend label
+            legend.append('text')
+                .attr('class', 'legend-label')
+                .attr('x', MAP_WIDTH + 70)
+                .attr('y', HEIGHT / 2)
+                .style('text-anchor', 'middle')
+                .text('Happiness Score')
+                .attr('transform', `rotate(90, ${MAP_WIDTH + 70}, ${HEIGHT / 2})`);
+
+            legend.append('text')
+                .attr('class', 'legend-label')
+                .attr('x', MAP_WIDTH + 50)
+                .attr('y', HEIGHT - 10)
+                .style('text-anchor', 'start')
+                .text('Unhappy');
+
+            legend.append('text')
+                .attr('class', 'legend-label')
+                .attr('x', MAP_WIDTH + 50)
+                .attr('y', 20)
+                .style('text-anchor', 'start')
+                .text('Happy');
+
+            //Prepare Country Abbreviations using the world map data to use in the rose charts
+            let countryAbbr = [];
+            map_data.features.forEach(c => {
+                switch(c.Country)
+                {
+                    case "Cote d'Ivoire":
+                        countryAbbr['Ivory Coast'] = c.id;
+                        break;
+                    case "Dem. Rep. Congo":
+                        countryAbbr['Democratic Republic of the Congo'] = c.id;
+                        break;
+                    case "Rep. Congo":
+                        countryAbbr['Republic of the Congo'] = c.id;
+                        break;
+                    case "Russian Federation":
+                        countryAbbr['Russia'] = c.id;
+                        break;
+                    case 'United Kingdom':
+                        countryAbbr['England'] = c.id;
+                        break;
+                    case 'United States':
+                        countryAbbr['USA'] = c.id;
+                        break;
+                    default:
+                        countryAbbr[c.properties.name] = c.id;
+                        break;
+                }
+            });
+
+            //Add missing abbreviations
+            countryAbbr['Comoros'] = 'COM';
+            countryAbbr["Cote d'Ivoire"] = 'CIV';
+            countryAbbr["Rep. Congo"] = 'COG';
+            countryAbbr["Dem. Rep. Congo"] = 'COD';
+            countryAbbr["Dem. Rep. Congo"] = 'COD';
+            countryAbbr["Mauritius"] = 'MUS';
+            countryAbbr["Tanzania"] = 'TZA';
+            countryAbbr["Russian Federation"] = 'RUS';
+            countryAbbr["Serbia"] = 'SRB';
+            countryAbbr["United Kingdom"] = 'GBR';
+            countryAbbr["Malta"] = 'MLT';
+            countryAbbr["Bahrain"] = 'BHR';
+            countryAbbr["Singapore"] = 'SGP';
+            countryAbbr["United States"] = 'USA';
+
+            makeCharts(countryAbbr);
+
+        });
+
         // Functions for generating fillable glasses
-        function updateGlassFill(glassData, fillAmount, label)
-        {
+        function updateGlassFill(glassData, fillAmount, label) {
             glassData.fill.attr('height', glassData.scale(fillAmount))
                 .attr('y', glassData.maxHeight + (glassData.y - glassData.scale(fillAmount)));
 
             glassData.text.text(label);
-
         }
 
         async function generateWineGlass(minmax)
@@ -366,221 +413,278 @@ function makeCharts(){
             });
         }
 
-		//Add a background behind the donut charts
-		mapSvg.append('rect')
-			.attr('y', HEIGHT)
-			.attr('height', MARGINS.bottom)
-			.attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
-			.style('fill', "#CCC");
-		
-		mapSvg.append('text')
-				.attr('y', HEIGHT + 25)
-				.attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)/2)
-				.style('text-anchor', 'middle')
-				.style('font-size', '20px')
-				.text("Alcohol Consumption by Region");
-		
-		buildColourLegend();
-		
-        // Combine data based on alcohol, because its not usable in its current format
-        var regionsByAlcohol2 = d3.nest()
-            .key(function(d) { return d.Region; })
-            .rollup(function(v) { return {
-                Wine_PerCapita: d3.sum(v, function(d) { return d.Wine_PerCapita; }),
-                Beer_PerCapita: d3.sum(v, function(d) { return d.Beer_PerCapita; }),
-                Spirit_PerCapita: d3.sum(v, function(d) { return d.Spirit_PerCapita; })
-            }; })
-            .object(data);
+        //Add a background behind the donut charts
+        mapSvg.append('rect')
+            .attr('y', HEIGHT)
+            .attr('height', MARGINS.bottom)
+            .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
+            .style('fill', "#CCC");
 
-        // use map to bring the arrays together
-        var regionsByAlcohol3 = Object.keys(regionsByAlcohol2).map(function(key) {
-            return [String(key), regionsByAlcohol2[key]];
-        });
+        mapSvg.append('text')
+            .attr('y', HEIGHT + 25)
+            .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
+            .style('text-anchor', 'middle')
+            .style('font-size', '20px')
+            .text("Alcohol Consumption by Region");
 
-        // put into an array of arrays (because we got a bunch of object arrays that cant be stacked)
-        var regionsByAlcohol4 = [];
-        for (var i = 0; i < regionsByAlcohol3.length; i++) {
-            var temp = {Region: regionsByAlcohol3[i][0], Wine_PerCapita: +regionsByAlcohol3[i][1].Wine_PerCapita, Beer_PerCapita: +regionsByAlcohol3[i][1].Beer_PerCapita, Spirit_PerCapita: +regionsByAlcohol3[i][1].Spirit_PerCapita};
-            regionsByAlcohol4[i] = temp;
+        //Prepare data for donut and rose charts.
+        //At the end of this function, the charts are called
+        function makeCharts(countryAbbr) {
+            // Combine data based on alcohol, because its not usable in its current format
+            var regionsByAlcohol2 = d3.nest()
+                .key(function (d) {
+                    return d.Region;
+                })
+                .rollup(function (v) {
+                    return {
+                        Wine_PerCapita: d3.sum(v, function (d) {
+                            return d.Wine_PerCapita;
+                        }),
+                        Beer_PerCapita: d3.sum(v, function (d) {
+                            return d.Beer_PerCapita;
+                        }),
+                        Spirit_PerCapita: d3.sum(v, function (d) {
+                            return d.Spirit_PerCapita;
+                        })
+                    };
+                })
+                .object(data);
+
+            // use map to bring the arrays together
+            var regionsByAlcohol3 = Object.keys(regionsByAlcohol2).map(function (key) {
+                return [String(key), regionsByAlcohol2[key]];
+            });
+
+            // put into an array of arrays (because we got a bunch of object arrays that cant be stacked)
+            var regionsByAlcohol4 = [];
+            for (var i = 0; i < regionsByAlcohol3.length; i++) {
+                var temp = {
+                    Region: regionsByAlcohol3[i][0],
+                    Wine_PerCapita: +regionsByAlcohol3[i][1].Wine_PerCapita,
+                    Beer_PerCapita: +regionsByAlcohol3[i][1].Beer_PerCapita,
+                    Spirit_PerCapita: +regionsByAlcohol3[i][1].Spirit_PerCapita
+                };
+                regionsByAlcohol4[i] = temp;
+            }
+            regionsByAlcohol4.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var countryAlcohol1 = d3.nest()
+                .key(function (d) {
+                    return d.Region;
+                })
+                .object(data);
+
+            var countryAlcohol2 = Object.keys(countryAlcohol1).map(function (key) {
+                return [String(key), countryAlcohol1[key]];
+            });
+
+
+            //Reformat data for each region
+            var easternEurope = countryAlcohol2[0][1];
+            var easternEurope2 = [];
+            for (var i = 0; i < easternEurope.length; i++) {
+                var temp = {
+                    Country: countryAbbr[easternEurope[i].Country] || easternEurope[i].Country,
+                    Wine_PerCapita: +easternEurope[i].Wine_PerCapita,
+                    Beer_PerCapita: +easternEurope[i].Beer_PerCapita,
+                    Spirit_PerCapita: +easternEurope[i].Spirit_PerCapita
+                };
+                easternEurope2[i] = temp;
+            }
+            easternEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var subAfrica = countryAlcohol2[1][1];
+            var subAfrica2 = [];
+            for (var i = 0; i < subAfrica.length; i++) {
+                var temp = {
+                    Country: countryAbbr[subAfrica[i].Country] || subAfrica[i].Country,
+                    Wine_PerCapita: +subAfrica[i].Wine_PerCapita,
+                    Beer_PerCapita: +subAfrica[i].Beer_PerCapita,
+                    Spirit_PerCapita: +subAfrica[i].Spirit_PerCapita
+                };
+                subAfrica2[i] = temp;
+            }
+            subAfrica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var southAmerica = countryAlcohol2[2][1];
+            var southAmerica2 = [];
+            for (var i = 0; i < southAmerica.length; i++) {
+                var temp = {
+                    Country: countryAbbr[southAmerica[i].Country] || southAmerica[i].Country,
+                    Wine_PerCapita: +southAmerica[i].Wine_PerCapita,
+                    Beer_PerCapita: +southAmerica[i].Beer_PerCapita,
+                    Spirit_PerCapita: +southAmerica[i].Spirit_PerCapita
+                };
+                southAmerica2[i] = temp;
+            }
+            southAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var aussie = countryAlcohol2[3][1];
+            var aussie2 = [];
+            for (var i = 0; i < aussie.length; i++) {
+                var temp = {
+                    Country: countryAbbr[aussie[i].Country] || aussie[i].Country,
+                    Wine_PerCapita: +aussie[i].Wine_PerCapita,
+                    Beer_PerCapita: +aussie[i].Beer_PerCapita,
+                    Spirit_PerCapita: +aussie[i].Spirit_PerCapita
+                };
+                aussie2[i] = temp;
+            }
+            aussie2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var westernEurope = countryAlcohol2[4][1];
+            var westernEurope2 = [];
+            for (var i = 0; i < westernEurope.length; i++) {
+                var temp = {
+                    Country: countryAbbr[westernEurope[i].Country] || westernEurope[i].Country,
+                    Wine_PerCapita: +westernEurope[i].Wine_PerCapita,
+                    Beer_PerCapita: +westernEurope[i].Beer_PerCapita,
+                    Spirit_PerCapita: +westernEurope[i].Spirit_PerCapita
+                };
+                westernEurope2[i] = temp;
+            }
+            westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var middleEast = countryAlcohol2[5][1];
+            var middleEast2 = [];
+            for (var i = 0; i < middleEast.length; i++) {
+                var temp = {
+                    Country: countryAbbr[middleEast[i].Country] || middleEast[i].Country,
+                    Wine_PerCapita: +middleEast[i].Wine_PerCapita,
+                    Beer_PerCapita: +middleEast[i].Beer_PerCapita,
+                    Spirit_PerCapita: +middleEast[i].Spirit_PerCapita
+                };
+                middleEast2[i] = temp;
+            }
+            middleEast2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var seAsia = countryAlcohol2[6][1];
+            var seAsia2 = [];
+            for (var i = 0; i < seAsia.length; i++) {
+                var temp = {
+                    Country: countryAbbr[seAsia[i].Country] || seAsia[i].Country,
+                    Wine_PerCapita: +seAsia[i].Wine_PerCapita,
+                    Beer_PerCapita: +seAsia[i].Beer_PerCapita,
+                    Spirit_PerCapita: +seAsia[i].Spirit_PerCapita
+                };
+                seAsia2[i] = temp;
+            }
+            seAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var northAmerica = countryAlcohol2[7][1];
+            var northAmerica2 = [];
+            for (var i = 0; i < northAmerica.length; i++) {
+                var temp = {
+                    Country: countryAbbr[northAmerica[i].Country] || northAmerica[i].Country,
+                    Wine_PerCapita: +northAmerica[i].Wine_PerCapita,
+                    Beer_PerCapita: +northAmerica[i].Beer_PerCapita,
+                    Spirit_PerCapita: +northAmerica[i].Spirit_PerCapita
+                };
+                northAmerica2[i] = temp;
+            }
+            northAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+            var eastAsia = countryAlcohol2[8][1];
+            var eastAsia2 = [];
+            for (var i = 0; i < eastAsia.length; i++) {
+                var temp = {
+                    Country: countryAbbr[eastAsia[i].Country] || eastAsia[i].Country,
+                    Wine_PerCapita: +eastAsia[i].Wine_PerCapita,
+                    Beer_PerCapita: +eastAsia[i].Beer_PerCapita,
+                    Spirit_PerCapita: +eastAsia[i].Spirit_PerCapita
+                };
+                eastAsia2[i] = temp;
+            }
+            eastAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
+
+
+            //An array which contains all arrays of region data, formatted appropriately for a rose chart.
+            var allRegionsRoseFormat = [easternEurope2, subAfrica2, southAmerica2,
+                aussie2, westernEurope2, middleEast2,
+                seAsia2, northAmerica2, eastAsia2];
+
+            //Build all donut charts, and pass in data to be used for rose chart
+            buildDonutCharts(data, regionsByAlcohol4, allRegionsRoseFormat);
+
+            //Draw colour legend for each alcohol type
+            buildColourLegend();
         }
-        regionsByAlcohol4.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-
-        var countryAlcohol1 = d3.nest()
-            .key(function(d) { return d.Region; })
-            .object(data);
-
-        var countryAlcohol2 = Object.keys(countryAlcohol1).map(function(key) {
-            return [String(key), countryAlcohol1[key]];
-        });
-
-        var easternEurope = countryAlcohol2[0][1];
-        var easternEurope2 = [];
-        for (var i = 0; i < easternEurope.length; i++) {
-            var temp = {Country: easternEurope[i].Country, Wine_PerCapita: +easternEurope[i].Wine_PerCapita, Beer_PerCapita: +easternEurope[i].Beer_PerCapita, Spirit_PerCapita: +easternEurope[i].Spirit_PerCapita};
-            easternEurope2[i] = temp;
-        }
-        easternEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        console.log(easternEurope2);
-        console.log("regionsByAlcohol4", regionsByAlcohol4);
-        var donutData = constructDonutData(regionsByAlcohol4, 0);
-        donutChart(data, donutData, 0, 140, "Central and Eastern Europe");
-
-        var subAfrica = countryAlcohol2[1][1];
-        var subAfrica2 = [];
-        for (var i = 0; i < subAfrica.length; i++) {
-            var temp = {Country: subAfrica[i].Country, Wine_PerCapita: +subAfrica[i].Wine_PerCapita, Beer_PerCapita: +subAfrica[i].Beer_PerCapita, Spirit_PerCapita: +subAfrica[i].Spirit_PerCapita};
-            subAfrica2[i] = temp;
-        }
-        subAfrica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        var donutData = constructDonutData(regionsByAlcohol4, 1);
-        donutChart(data, donutData, 277, 140, "Sub-Saharan Africa");
-
-        var southAmerica = countryAlcohol2[2][1];
-        var southAmerica2 = [];
-        for (var i = 0; i < southAmerica.length; i++) {
-            var temp = {Country: southAmerica[i].Country, Wine_PerCapita: +southAmerica[i].Wine_PerCapita, Beer_PerCapita: +southAmerica[i].Beer_PerCapita, Spirit_PerCapita: +southAmerica[i].Spirit_PerCapita};
-            southAmerica2[i] = temp;
-        }
-        southAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        var donutData = constructDonutData(regionsByAlcohol4, 2);
-        donutChart(data, donutData, 277 * 2, 140, "South America" );
-
-        var aussie = countryAlcohol2[3][1];
-        var aussie2 = [];
-        for (var i = 0; i < aussie.length; i++) {
-            var temp = {Country: aussie[i].Country, Wine_PerCapita: +aussie[i].Wine_PerCapita, Beer_PerCapita: +aussie[i].Beer_PerCapita, Spirit_PerCapita: +aussie[i].Spirit_PerCapita};
-            aussie2[i] = temp;
-        }
-        aussie2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        var donutData = constructDonutData(regionsByAlcohol4, 3);
-        donutChart(data, donutData, 277 * 3, 140, "Australia & New Zealand" );
-
-        var westernEurope = countryAlcohol2[4][1];
-        var westernEurope2 = [];
-        for (var i = 0; i < westernEurope.length; i++) {
-            var temp = {Country: westernEurope[i].Country, Wine_PerCapita: +westernEurope[i].Wine_PerCapita, Beer_PerCapita: +westernEurope[i].Beer_PerCapita, Spirit_PerCapita: +westernEurope[i].Spirit_PerCapita};
-            westernEurope2[i] = temp;
-        }
-        westernEurope2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        var donutData = constructDonutData(regionsByAlcohol4, 4);
-        donutChart(data, donutData, 0, 360, "Western Europe");
-
-        var middleEast = countryAlcohol2[5][1];
-        var middleEast2 = [];
-        for (var i = 0; i < middleEast.length; i++) {
-            var temp = {Country: middleEast[i].Country, Wine_PerCapita: +middleEast[i].Wine_PerCapita, Beer_PerCapita: +middleEast[i].Beer_PerCapita, Spirit_PerCapita: +middleEast[i].Spirit_PerCapita};
-            middleEast2[i] = temp;
-        }
-        middleEast2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        var donutData = constructDonutData(regionsByAlcohol4, 5);
-        donutChart(data, donutData, 277 * 1, 360, "Middle East & North Africa" );
-
-        var seAsia = countryAlcohol2[6][1];
-        var seAsia2 = [];
-        for (var i = 0; i < seAsia.length; i++) {
-            var temp = {Country: seAsia[i].Country, Wine_PerCapita: +seAsia[i].Wine_PerCapita, Beer_PerCapita: +seAsia[i].Beer_PerCapita, Spirit_PerCapita: +seAsia[i].Spirit_PerCapita};
-            seAsia2[i] = temp;
-        }
-        seAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        var donutData = constructDonutData(regionsByAlcohol4, 6);
-        donutChart(data, donutData, 277 * 2, 360, "South East Asia");
-
-        var northAmerica = countryAlcohol2[7][1];
-        var northAmerica2 = [];
-        for (var i = 0; i < northAmerica.length; i++) {
-            var temp = {Country: northAmerica[i].Country, Wine_PerCapita: +northAmerica[i].Wine_PerCapita, Beer_PerCapita: +northAmerica[i].Beer_PerCapita, Spirit_PerCapita: +northAmerica[i].Spirit_PerCapita};
-            northAmerica2[i] = temp;
-        }
-        northAmerica2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        var donutData = constructDonutData(regionsByAlcohol4, 7);
-        donutChart(data, donutData, 277 * 3, 360, "North America");
-
-        var eastAsia = countryAlcohol2[8][1];
-        var eastAsia2 = [];
-        for (var i = 0; i < eastAsia.length; i++) {
-            var temp = {Country: eastAsia[i].Country, Wine_PerCapita: +eastAsia[i].Wine_PerCapita, Beer_PerCapita: +eastAsia[i].Beer_PerCapita, Spirit_PerCapita: +eastAsia[i].Spirit_PerCapita};
-            eastAsia2[i] = temp;
-        }
-        eastAsia2.columns = ["Country", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"]
-        var donutData = constructDonutData(regionsByAlcohol4, 8);
-        donutChart(data, donutData, 277 * 4, 360, "Eastern Asia");
     }
 
+    //Build all 9 donut charts, while also passing in parameters for each corresponding rose chart
+    function buildDonutCharts(data, regionsArray, roseData){
+        var donutData;
 
+        donutData = constructDonutData(regionsArray, 0);
+        donutChart(data, donutData, 0, 140, "Central and Eastern Europe", roseData[0], 700);
 
-    function constructDonutData(regionArray, regionIndex){
-        var donutData = [{alcohol:(d3.keys(regionArray[regionIndex])[1]), consumption:(d3.values(regionArray[regionIndex])[1])},
-            {alcohol:(d3.keys(regionArray[regionIndex])[2]), consumption:(d3.values(regionArray[regionIndex])[2])},
-            {alcohol:(d3.keys(regionArray[regionIndex])[3]), consumption:(d3.values(regionArray[regionIndex])[3])}
+        donutData = constructDonutData(regionsArray, 1);
+        donutChart(data, donutData, 277, 140, "Sub-Saharan Africa", roseData[1], 500);
+
+        donutData = constructDonutData(regionsArray, 2);
+        donutChart(data, donutData, 277 * 2, 140, "South America", roseData[2], 500);
+
+        donutData = constructDonutData(regionsArray, 3);
+        donutChart(data, donutData, 277 * 3, 140, "Australia & New Zealand", roseData[3], 600);
+
+        donutData = constructDonutData(regionsArray, 4);
+        donutChart(data, donutData, 0, 360, "Western Europe", roseData[4], 600);
+
+        donutData = constructDonutData(regionsArray, 5);
+        donutChart(data, donutData, 277, 360, "Middle East & North Africa", roseData[5], 200);
+
+        donutData = constructDonutData(regionsArray, 6);
+        donutChart(data, donutData, 277 * 2, 360, "South East Asia", roseData[6], 400);
+
+        donutData = constructDonutData(regionsArray, 7);
+        donutChart(data, donutData, 277 * 3, 360, "North America", roseData[7], 600);
+
+        donutData = constructDonutData(regionsArray, 8);
+        donutChart(data, donutData, 277 * 4, 360, "Eastern Asia", roseData[8], 500);
+
+        //Build the home button which always bring user back to all donut charts
+     //   buildHomeButton(data, regionsArray, roseData);
+
+    }
+
+    // Format the data such that the donut code can make sense of it
+    function constructDonutData(regionArray, regionIndex) {
+        var donutData = [{
+            alcohol: (d3.keys(regionArray[regionIndex])[1]),
+            consumption: (d3.values(regionArray[regionIndex])[1])
+        },
+            {alcohol: (d3.keys(regionArray[regionIndex])[2]), consumption: (d3.values(regionArray[regionIndex])[2])},
+            {alcohol: (d3.keys(regionArray[regionIndex])[3]), consumption: (d3.values(regionArray[regionIndex])[3])}
         ];
         return donutData;
     }
 
-    function buildColourLegend(){
+    /*
+        BUILD INDIVIDUAL DONUT CHART FOR A PARTICULAR REGION
+        based on pie chart example: https://scrimba.com/p/pPrZLhD/c6ZPkH3
+    */
 
-        var legendSvg = d3.select("svg");
-        var legendX =  1000 + 120;
-        var legendY = HEIGHT + 140 - DONUTHEIGHT / 2;
+    function donutChart(dataset, customizedData, leftOffset, topOffset, regionTitle, roseData, roseMax) {
 
-        legendSvg.append("rect")
-            .attr("width", 30)
-            .attr("height", 30)
-            .attr("x", legendX)
-            .attr("y", legendY)
-            .style("fill", "#5c0010");
-        legendSvg.append("text")
-            .attr("x", legendX + 40)
-            .attr("y", legendY + 15)
-            .attr("dy", ".35em")
-            .text("Wine Consumption");
-
-        legendSvg.append("rect")
-            .attr("width", 30)
-            .attr("height", 30)
-            .attr("x", legendX)
-            .attr("y", legendY+60)
-            .style("fill", "#d28816");
-        legendSvg.append("text")
-            .attr("x", legendX + 40)
-            .attr("y", legendY + 75)
-            .attr("dy", ".35em")
-            .text("Beer Consumption");
-
-        legendSvg.append("rect")
-            .attr("width", 30)
-            .attr("height", 30)
-            .attr("x", legendX)
-            .attr("y", legendY+120)
-            .style("fill", "#00CCCC");
-        legendSvg.append("text")
-            .attr("x", legendX + 40)
-            .attr("y", legendY + 135)
-            .attr("dy", ".35em")
-            .text("Spirits Consumption");
-    }
-
-/*
-	Donut Chart reference: https://scrimba.com/p/pPrZLhD/c6ZPkH3
-
-*/
-
-    function donutChart(dataset, customizedData, leftOffset, topOffset, regionTitle) {
+        //Set the data
         var data = customizedData;
 
+        //Set all initial variables
         var donutSvg = d3.select("svg"),
             width = DONUTWIDTH,
             height = DONUTHEIGHT,
             margin = {top: 0, right: 20, bottom: 40, left: -40},
             titlepadding = 100,
             chartWidth = width + margin.left + margin.right,
-            chartHeight= height + margin.top + margin.bottom;
-            let g = donutSvg.append("g").attr("transform", "translate(" + (chartWidth + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
+            chartHeight = height + margin.top + margin.bottom;
 
         var radius = 85;
-
         var color = d3.scaleOrdinal(["#5c0010", "#d28816", "#00CCCC"]);
 
-        var donut = d3.pie().value(function(d) {
+        //Build donut chart svg
+        let g = donutSvg.append("g").attr("transform", "translate(" + (chartWidth + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
+
+        var donut = d3.pie().value(function (d) {
             return d.consumption;
         });
 
@@ -595,14 +699,283 @@ function makeCharts(){
 
         arc.append("path")
             .attr("d", path)
-            .attr("fill", function(d) { return color(d.data.consumption); });
+            .attr("fill", function (d) {
+                return color(d.data.consumption);
+            });
 
+        //Add label under chart with with region name
         donutSvg.append("text")
             .attr("x", chartWidth + leftOffset)
             .attr("y", HEIGHT + topOffset + titlepadding)
             .attr("dy", ".35em")
             .attr("text-anchor", "middle")
-            .text(function(d) { return regionTitle; })
+            .text(function (d) {
+                return regionTitle;
+            });
+
+        //INTERACTION!
+        g.on("click", function () {
+
+            roseChart(dataset, regionTitle, roseData, roseMax);
+
+        });
     }
+
+
+/*
+       BUILD ROSE CHART CORRESPONDING TO THE CLICKED DONUT CHART
+*/
+
+    function roseChart(dataset, title, customizedData, maxAmount) {
+
+        // Draw a background for the rose charts -- ie. hide the donuts
+        d3.select("svg").append("rect")
+            .attr('y', HEIGHT)
+            .attr('height', MARGINS.bottom)
+            .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
+            .style('fill', "#CCC");
+
+        // Set div for tool tip
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        //Set initial variables
+        var roseSvg = d3.select("svg"),
+            width = ROSEWIDTH,
+            height = ROSEHEIGHT,
+            leftOffset = 450,
+            topOffset = 200,
+            margin = {top: 40, right: 20, bottom: 40, left: 20},
+            innerRadius = 30,
+            chartWidth = width - margin.left - margin.right,
+            chartHeight = height - margin.top - margin.bottom,
+            outerRadius = (Math.min(chartWidth, chartHeight) / 2);
+
+        // Build Rose SVG
+        let g = roseSvg.append("g").attr("transform", "translate(" + (chartWidth / 2 + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
+
+        var angle = d3.scaleLinear()
+            .range([0, 2 * Math.PI]);
+
+        var radius = d3.scaleLinear()
+            .range([innerRadius, outerRadius]);
+
+        var x = d3.scaleBand()
+            .range([0, 2 * Math.PI])
+            .align(0);
+
+        var y = d3.scaleLinear() //you can try scaleRadial but it scales differently
+            .range([innerRadius, outerRadius]);
+
+        var z = d3.scaleOrdinal()
+            .range(["#5c0010", "#d28816", "#00DDDD"]);
+
+        //Rose chart code
+        for (i = 6, t = 0; i < customizedData.columns.length; ++i) {
+            t += customizedData[customizedData.columns[i]] = +customizedData[customizedData.columns[i]];
+        }
+
+        customizedData.total = t;
+
+        x.domain(customizedData.map(function (d) {return d.Country;}));
+        y.domain([0, maxAmount]);
+        z.domain(customizedData.columns.slice(1));
+
+        // Extend the domain slightly to match the range of [0, 2π].
+        angle.domain([0, d3.max(customizedData, function (d, i) {return i + 1;})]);
+        radius.domain([0, d3.max(customizedData, function (d) {return d.y0 + d.y;})]);
+        angleOffset = -360.0 / customizedData.length / 2.0;
+
+        g.append("g")
+            .selectAll("g")
+            .data(d3.stack().keys(customizedData.columns.slice(1))(customizedData))
+            .enter().append("g")
+            .attr("fill", function (d) {return z(d.key);})
+            .selectAll("path")
+            .data(function (d) {return d;})
+            .enter().append("path")
+            .attr("d", d3.arc()
+                .innerRadius(function (d) {return y(d[0]); })
+                .outerRadius(function (d) {return y(d[1]);})
+                .startAngle(function (d) {return x(d.data.Country);})
+                .endAngle(function (d) {return x(d.data.Country) + x.bandwidth();})
+                .padAngle(0.01)
+                .padRadius(innerRadius))
+            .attr("transform", function () { return "rotate(" + angleOffset + ")"})
+
+            //Tooltips!
+            .on('mousemove', function (d) {
+                div.html('<span class="title">' + (d.data.Country) + "</span></br> Wine: " + d.data.Wine_PerCapita + "</br>Spirits: " + d.data.Spirit_PerCapita + "</br> Beer: " + d.data.Beer_PerCapita)
+                    .style("opacity", 1)
+                    .style("left", (d3.event.pageX) - div.node().clientWidth / 2 + "px")
+                    .style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
+            })
+
+            .on('mouseout', function (d) {
+                div.style("opacity", 0)
+            });
+
+        g.append('text')
+            .attr('y', 250)
+            .attr('x', 0)
+            .style('text-anchor', 'middle')
+            .style('font-weight', 'bold')
+            .text(title);
+
+        var label = g.append("g")
+            .selectAll("g")
+            .data(customizedData)
+            .enter().append("g")
+            .attr("text-anchor", "middle")
+            .attr("transform", function (d) {
+                return "rotate(" + ((x(d.Country) + x.bandwidth() / 2) * 180 / Math.PI - (90 - angleOffset)) + ")translate(" + (outerRadius + 30) + ",0)";
+            });
+
+        label.append("text")
+            .attr("transform", function (d) {
+                return (x(d.Country) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) <= Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
+            })
+            .text(function (d) {
+                return d.Country;
+            })
+            .style("font-size", 12);
+
+        var yAxis = g.append("g")
+            .attr("text-anchor", "middle");
+
+        var yTick = yAxis
+            .selectAll("g")
+            .data(y.ticks(3).slice(1))
+            .enter().append("g");
+
+        yTick.append("circle")
+            .attr("fill", "none")
+            .attr("stroke", "gray")
+            .attr("stroke-dasharray", "4,4")
+            .attr("r", y);
+
+        yTick.append("text")
+            .attr("y", function (d) {
+                return -y(d) + 2;
+            })
+            .attr("dy", "-0.35em")
+            .attr("x", 0)
+            .text(y.tickFormat(5, "s"))
+            .style("font-size", 12);
+
+        // Add colour legend -- might need to pass in data for this particular rose chart, in order to implement the legend interaction
+        buildColourLegend();
+
+    }
+
+/*
+        BUILD COLOUR LEGEND
+*/
+
+    function buildColourLegend() {
+
+        var legendSvg = d3.select("svg");
+        var legendX = MAP_WIDTH + 120;
+        var legendY = HEIGHT + 140 - DONUTHEIGHT / 2;
+
+        //Wine legend item
+        legendSvg.append("rect")
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("x", legendX)
+            .attr("y", legendY)
+            .style("fill", "#5c0010")
+            .on("click", function(){
+                // FILTER FOR WINE: INTERACTION IMPLEMENTATION HERE
+            });
+        legendSvg.append("text")
+            .attr("x", legendX + 40)
+            .attr("y", legendY + 15)
+            .attr("dy", ".35em")
+            .text("Wine Consumption");
+
+        //Beer legend item
+        legendSvg.append("rect")
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("x", legendX)
+            .attr("y", legendY + 60)
+            .style("fill", "#d28816")
+            .on("click", function(){
+            // FILTER FOR BEER: INTERACTION IMPLEMENTATION HERE
+            });
+
+        legendSvg.append("text")
+            .attr("x", legendX + 40)
+            .attr("y", legendY + 75)
+            .attr("dy", ".35em")
+            .text("Beer Consumption");
+
+        //Spirits legend item
+        legendSvg.append("rect")
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("x", legendX)
+            .attr("y", legendY + 120)
+            .style("fill", "#00CCCC")
+        .on("click", function(){
+        // FILTER FOR SPIRITS: INTERACTION IMPLEMENTATION HERE
+        });
+
+        legendSvg.append("text")
+            .attr("x", legendX + 40)
+            .attr("y", legendY + 135)
+            .attr("dy", ".35em")
+            .text("Spirits Consumption");
+    }
+
+    //BUILD HOME BUTTON
+    function buildHomeButton(data, regionsArray, roseData) {
+
+        var homeSvg = d3.select("svg");
+
+        //Temporary home button: a white square
+        homeSvg.append("rect")
+            .attr("width", 50)
+            .attr("height", 50)
+            .attr("x", 0)
+            .attr("y", HEIGHT-50)
+            .style("fill", "white")
+            .style("stroke", "black");
+
+            homeSvg.append("text")
+            .attr("x", 2)
+            .attr("y", HEIGHT-60)
+            .attr("dy", ".35em")
+            .text("HOME")
+                .style("stroke", "white");
+
+            homeSvg.on("click", function(){
+                console.log("HOME BUTTON CLICKED!");
+                buildDonutCharts(data, regionsArray, roseData);
+            });
+
+        /* TM: below is a mess of me attempting to import an external svg image to use for home button.
+        *  If you uncomment it, a giant home symbol will be on top of everything. It is clickable, I just cant move it at the moment */
+
+    //     d3.xml('home.svg')
+    //         .then(homebutton => {
+    //             homeSvg.node().appendChild(homebutton.getElementsByTagName('svg')[0]);
+    //             useHomeButton(this);
+    //         });
+    //
+    //     let homeButton = d3.select("#homebutton")
+    //         .attr('x', MAP_WIDTH + MARGINS.right + 100)
+    //         .attr('y', 50);
+    //
+    //     function useHomeButton(homeSvg) {
+    //         d3.select(homeSvg)
+    //             .on("click", function () {
+    //                 console.log("CLICKED HOME BUTTON!");   //TEST --> passed. Click is recognized
+    //             })
+    //             //.attr("transform", "translate (100, 100)") // Cannot transform this
+    //     }
+     }
 }
 
