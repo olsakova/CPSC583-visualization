@@ -384,8 +384,7 @@ function makeCharts() {
             });
         }
 
-        async function generateSmile(minmax)
-        {
+        async function generateSmile(minmax) {
             d3.selectAll('#smile').remove();
 
             await d3.xml('smile.svg').then((glassSvg) => {
@@ -409,23 +408,16 @@ function makeCharts() {
                     .style('text-anchor', "middle")
                     .text('100%');
 
-                ext_svg.smile = {glass: glass, scale: happinessScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
+                ext_svg.smile = {
+                    glass: glass,
+                    scale: happinessScale,
+                    fill: fill,
+                    y: y,
+                    maxHeight: maxHeight,
+                    text: label
+                };
             });
         }
-
-        //Add a background behind the donut charts
-        mapSvg.append('rect')
-            .attr('y', HEIGHT)
-            .attr('height', MARGINS.bottom)
-            .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
-            .style('fill', "#CCC");
-
-        mapSvg.append('text')
-            .attr('y', HEIGHT + 25)
-            .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
-            .style('text-anchor', 'middle')
-            .style('font-size', '20px')
-            .text("Alcohol Consumption by Region");
 
         //Prepare data for donut and rose charts.
         //At the end of this function, the charts are called
@@ -603,16 +595,33 @@ function makeCharts() {
                 aussie2, westernEurope2, middleEast2,
                 seAsia2, northAmerica2, eastAsia2];
 
+            //Draw background behind donuts
+            d3.select("svg").append('rect')
+                .attr('y', HEIGHT)
+                .attr('height', MARGINS.bottom)
+                .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
+                .style('fill', "#CCC");
+            d3.select("svg").append('text')
+                .attr('y', HEIGHT + 25)
+                .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
+                .style('text-anchor', 'middle')
+                .style('font-size', '20px')
+                .text("Alcohol Consumption by Region");
+
             //Build all donut charts, and pass in data to be used for rose chart
             buildDonutCharts(data, regionsByAlcohol4, allRegionsRoseFormat);
 
             //Draw colour legend for each alcohol type
             buildColourLegend();
+
+            //Build the home button which always bring user back to all donut charts
+            buildHomeButton(data, regionsByAlcohol4, allRegionsRoseFormat);
         }
     }
 
     //Build all 9 donut charts, while also passing in parameters for each corresponding rose chart
     function buildDonutCharts(data, regionsArray, roseData){
+
         var donutData;
 
         donutData = constructDonutData(regionsArray, 0);
@@ -641,9 +650,6 @@ function makeCharts() {
 
         donutData = constructDonutData(regionsArray, 8);
         donutChart(data, donutData, 277 * 4, 360, "Eastern Asia", roseData[8], 500);
-
-        //Build the home button which always bring user back to all donut charts
-     //   buildHomeButton(data, regionsArray, roseData);
 
     }
 
@@ -716,6 +722,13 @@ function makeCharts() {
         //INTERACTION!
         g.on("click", function () {
 
+            // Draw a background for the rose charts -- ie. hide the donuts
+            d3.select("svg").append("rect")
+                .attr('y', HEIGHT)
+                .attr('height', MARGINS.bottom)
+                .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
+                .style('fill', "#CCC");
+
             roseChart(dataset, regionTitle, roseData, roseMax);
 
         });
@@ -727,13 +740,6 @@ function makeCharts() {
 */
 
     function roseChart(dataset, title, customizedData, maxAmount) {
-
-        // Draw a background for the rose charts -- ie. hide the donuts
-        d3.select("svg").append("rect")
-            .attr('y', HEIGHT)
-            .attr('height', MARGINS.bottom)
-            .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
-            .style('fill', "#CCC");
 
         // Set div for tool tip
         var div = d3.select("body").append("div")
@@ -817,10 +823,11 @@ function makeCharts() {
             });
 
         g.append('text')
-            .attr('y', 250)
-            .attr('x', 0)
+            .attr('y', (ROSEHEIGHT/8))
+            .attr('x', (-ROSEWIDTH) + 15)
             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
+            .style('font-size', 30)
             .text(title);
 
         var label = g.append("g")
@@ -933,49 +940,57 @@ function makeCharts() {
     //BUILD HOME BUTTON
     function buildHomeButton(data, regionsArray, roseData) {
 
-        var homeSvg = d3.select("svg");
-
-        //Temporary home button: a white square
-        homeSvg.append("rect")
+        //Home button SVG: a white square
+        d3.select("svg").append("rect")
             .attr("width", 50)
             .attr("height", 50)
             .attr("x", 0)
             .attr("y", HEIGHT-50)
             .style("fill", "white")
-            .style("stroke", "black");
+            .style("stroke", "black")
+            .on("click", function(){
+                console.log("HOME BUTTON CLICKED!");
 
-            homeSvg.append("text")
+                // "Hide" current rose chart
+                d3.select("svg").append('rect')
+                    .attr('y', HEIGHT)
+                    .attr('x', 0)
+                    .attr('height', ROSEHEIGHT)
+                    .attr('width', ROSEWIDTH * 2)
+                    .style('fill', "#CCC");
+
+                buildDonutCharts(data, regionsArray, roseData);
+            });
+        d3.select("svg").append("text")
             .attr("x", 2)
             .attr("y", HEIGHT-60)
             .attr("dy", ".35em")
             .text("HOME")
-                .style("stroke", "white");
+            .style("stroke", "white");
 
-            homeSvg.on("click", function(){
-                console.log("HOME BUTTON CLICKED!");
-                buildDonutCharts(data, regionsArray, roseData);
-            });
 
         /* TM: below is a mess of me attempting to import an external svg image to use for home button.
-        *  If you uncomment it, a giant home symbol will be on top of everything. It is clickable, I just cant move it at the moment */
+        *  If you uncomment it, a giant home symbol will be on top of everything. */
 
-    //     d3.xml('home.svg')
-    //         .then(homebutton => {
-    //             homeSvg.node().appendChild(homebutton.getElementsByTagName('svg')[0]);
-    //             useHomeButton(this);
-    //         });
-    //
-    //     let homeButton = d3.select("#homebutton")
-    //         .attr('x', MAP_WIDTH + MARGINS.right + 100)
-    //         .attr('y', 50);
-    //
-    //     function useHomeButton(homeSvg) {
-    //         d3.select(homeSvg)
-    //             .on("click", function () {
-    //                 console.log("CLICKED HOME BUTTON!");   //TEST --> passed. Click is recognized
-    //             })
-    //             //.attr("transform", "translate (100, 100)") // Cannot transform this
-    //     }
+        // var homeSvg = d3.select("svg");
+        //
+        // d3.xml('home.svg')
+        //     .then(homebutton => {
+        //         homeSvg.node().appendChild(homebutton.getElementsByTagName('svg')[0]);
+        //         useHomeButton(this);
+        //     });
+        //
+        // let homeButton = d3.select("#homebutton")
+        //     .attr('x', MAP_WIDTH + MARGINS.right + 100)
+        //     .attr('y', 50);
+        //
+        // function useHomeButton(homeSvg) {
+        //     d3.select(homeSvg)
+        //         .on("click", function () {
+        //             console.log("CLICKED HOME BUTTON!");   //TEST --> passed. Click is recognized
+        //         })
+        //         //.attr("transform", "translate (100, 100)") // Cannot transform this
+        // }
      }
 }
 
