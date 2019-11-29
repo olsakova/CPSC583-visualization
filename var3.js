@@ -746,6 +746,7 @@ function makeCharts() {
 
             // Hide the donuts
 			donutSvg.selectAll('.donut').attr('display', 'none');
+			donutSvg.selectAll('.chartLegend').attr('display', 'none');
 			
 			//Draw the rose chart
             roseChart(dataset, regionTitle, roseData, roseMax);
@@ -760,18 +761,18 @@ function makeCharts() {
 
     function roseChart(dataset, title, customizedData, maxAmount) {
         buildRose(dataset, title, customizedData, customizedData, maxAmount);
+
 //        // Add colour legend -- might need to pass in data for this particular rose chart, in order to implement the legend interaction
 //        buildColourLegend();
-		
-		
+
 		//Build the home button which always bring user back to all donut charts
 		buildDonutsButton();
+
+		//add the filters
         buildFilters(dataset, title, customizedData, maxAmount);
     }
 
     function buildRose(dataset, title, customizedData, filteredData, maxAmount) {
-        // showWine = wineFilter;
-        // console.log("show wine is " + showWine)
         if (!showWine || !showBeer || !showSpirits){
             customizedData = filteredData;
         }
@@ -927,49 +928,23 @@ function makeCharts() {
             .style("font-size", 12);
     }
 
-    //BUILD FILTERS
+    // BUILD FILTERS
     function buildFilters(dataset, title, oldData, maxAmount) {
         var wineSvg = d3.select("svg");
         var beerSvg = d3.select("svg");
         var spiritSvg = d3.select("svg");
-
-        //const clonedArray = sourceArray.map(item => ({...item}));
 
         wineSvg.append('g')
             .attr('class', 'wineButton')
             .on('click', function()
             {
                 filter(wineSvg,true, false, false, oldData, dataset, title, maxAmount);
-                // if(showWine){
-                //     console.log("Wine filter is true")
-                //     for(i = 0; i < newData.length; i++){
-                //         newData[i].Wine_PerCapita = 0
-                //     }
-                //     console.log("When were removing wine")
-                //     console.log(newData)
-                //     console.log(oldData);
-                //     //Remove the rose
-                //     wineSvg.selectAll('.rose').remove();
-                //     //Rebuilt the rose
-                //     buildRose(dataset, title, oldData, newData, maxAmount, false)
-                // }
-                // else if (!showWine) {
-                //     console.log("Wine filter is FALSE")
-                //     console.log(oldData);
-                //     //Remove the rose
-                //     wineSvg.selectAll('.rose').remove();
-                //     //Rebuilt the rose
-                //     console.log("Show wine again" + oldData)
-                //     buildRose(dataset, title, oldData, oldData, maxAmount, true)
-                // }
-
-
             })
             .style('cursor', 'pointer')
             .append('text')
             .attr('width', 100)
             .attr('height', 25)
-            .attr('x', 25)
+            .attr('x', 100)
             .attr('y', HEIGHT + MARGINS.bottom - 100)
             .text('WINE')
             .style('fill', 'black')
@@ -980,13 +955,12 @@ function makeCharts() {
             .on('click', function()
             {
                 filter(beerSvg,false, true, false, oldData, dataset, title, maxAmount);
-
             })
             .style('cursor', 'pointer')
             .append('text')
             .attr('width', 100)
             .attr('height', 25)
-            .attr('x', 25)
+            .attr('x', 100)
             .attr('y', HEIGHT + MARGINS.bottom - 150)
             .text('BEER')
             .style('fill', 'black')
@@ -997,13 +971,12 @@ function makeCharts() {
             .on('click', function()
             {
                 filter(spiritSvg,false, false, true, oldData, dataset, title, maxAmount);
-
             })
             .style('cursor', 'pointer')
             .append('text')
             .attr('width', 100)
             .attr('height', 25)
-            .attr('x', 25)
+            .attr('x', 100)
             .attr('y', HEIGHT + MARGINS.bottom - 200)
             .text('SPIRITS')
             .style('fill', 'black')
@@ -1043,9 +1016,10 @@ function makeCharts() {
         }
         //Remove the rose
         svg.selectAll('.rose').remove();
-        //Rebuilt the rose
+        //Rebuild the rose
         buildRose(dataset, title, oldData, newData, maxAmount)
     }
+
 /*
         BUILD COLOUR LEGEND
 */
@@ -1058,6 +1032,7 @@ function makeCharts() {
 
         //Wine legend item
         legendSvg.append("rect")
+            .attr('class', 'chartLegend')
             .attr("width", 30)
             .attr("height", 30)
             .attr("x", legendX)
@@ -1067,6 +1042,7 @@ function makeCharts() {
                 // FILTER FOR WINE: INTERACTION IMPLEMENTATION HERE
             });
         legendSvg.append("text")
+            .attr('class', 'chartLegend')
             .attr("x", legendX + 40)
             .attr("y", legendY + 15)
             .attr("dy", ".35em")
@@ -1074,6 +1050,7 @@ function makeCharts() {
 
         //Beer legend item
         legendSvg.append("rect")
+            .attr('class', 'chartLegend')
             .attr("width", 30)
             .attr("height", 30)
             .attr("x", legendX)
@@ -1084,6 +1061,7 @@ function makeCharts() {
             });
 
         legendSvg.append("text")
+            .attr('class', 'chartLegend')
             .attr("x", legendX + 40)
             .attr("y", legendY + 75)
             .attr("dy", ".35em")
@@ -1091,6 +1069,7 @@ function makeCharts() {
 
         //Spirits legend item
         legendSvg.append("rect")
+            .attr('class', 'chartLegend')
             .attr("width", 30)
             .attr("height", 30)
             .attr("x", legendX)
@@ -1101,6 +1080,7 @@ function makeCharts() {
         });
 
         legendSvg.append("text")
+            .attr('class', 'chartLegend')
             .attr("x", legendX + 40)
             .attr("y", legendY + 135)
             .attr("dy", ".35em")
@@ -1132,6 +1112,7 @@ function makeCharts() {
 			
 				//Show the donuts
 				donutButtonSvg.selectAll('.donut').attr('display', 'true');
+                donutButtonSvg.selectAll('.chartLegend').attr('display', 'true');
 			
 			})
 			.style('cursor', 'pointer')
