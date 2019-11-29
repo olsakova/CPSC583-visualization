@@ -18,6 +18,9 @@ const ROSEWIDTH = 500;
 const ROSEHEIGHT = 450;
 
 let ext_svg = {};
+var showWine = true;
+var showBeer = true;
+var showSpirits = true;
 
 function makeCharts() {
     //Get the data
@@ -756,7 +759,22 @@ function makeCharts() {
 */
 
     function roseChart(dataset, title, customizedData, maxAmount) {
+        buildRose(dataset, title, customizedData, customizedData, maxAmount);
+//        // Add colour legend -- might need to pass in data for this particular rose chart, in order to implement the legend interaction
+//        buildColourLegend();
+		
+		
+		//Build the home button which always bring user back to all donut charts
+		buildDonutsButton();
+        buildFilters(dataset, title, customizedData, maxAmount);
+    }
 
+    function buildRose(dataset, title, customizedData, filteredData, maxAmount) {
+        // showWine = wineFilter;
+        // console.log("show wine is " + showWine)
+        if (!showWine || !showBeer || !showSpirits){
+            customizedData = filteredData;
+        }
         // Set div for tool tip
         var div = d3.select("body").append("div")
             .attr("class", "tooltip")
@@ -776,8 +794,8 @@ function makeCharts() {
 
         // Build Rose SVG
         let g = roseSvg.append("g")
-		.attr('class', 'rose')
-		.attr("transform", "translate(" + (chartWidth / 2 + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
+            .attr('class', 'rose')
+            .attr("transform", "translate(" + (chartWidth / 2 + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
 
         var angle = d3.scaleLinear()
             .range([0, 2 * Math.PI]);
@@ -802,31 +820,51 @@ function makeCharts() {
 
         customizedData.total = t;
 
-        x.domain(customizedData.map(function (d) {return d.Country;}));
+        x.domain(customizedData.map(function (d) {
+            return d.Country;
+        }));
         y.domain([0, maxAmount]);
         z.domain(customizedData.columns.slice(1));
 
         // Extend the domain slightly to match the range of [0, 2π].
-        angle.domain([0, d3.max(customizedData, function (d, i) {return i + 1;})]);
-        radius.domain([0, d3.max(customizedData, function (d) {return d.y0 + d.y;})]);
+        angle.domain([0, d3.max(customizedData, function (d, i) {
+            return i + 1;
+        })]);
+        radius.domain([0, d3.max(customizedData, function (d) {
+            return d.y0 + d.y;
+        })]);
         angleOffset = -360.0 / customizedData.length / 2.0;
 
         g.append("g")
             .selectAll("g")
             .data(d3.stack().keys(customizedData.columns.slice(1))(customizedData))
             .enter().append("g")
-            .attr("fill", function (d) {return z(d.key);})
+            .attr("fill", function (d) {
+                return z(d.key);
+            })
             .selectAll("path")
-            .data(function (d) {return d;})
+            .data(function (d) {
+                return d;
+            })
             .enter().append("path")
             .attr("d", d3.arc()
-                .innerRadius(function (d) {return y(d[0]); })
-                .outerRadius(function (d) {return y(d[1]);})
-                .startAngle(function (d) {return x(d.data.Country);})
-                .endAngle(function (d) {return x(d.data.Country) + x.bandwidth();})
+                .innerRadius(function (d) {
+                    return y(d[0]);
+                })
+                .outerRadius(function (d) {
+                    return y(d[1]);
+                })
+                .startAngle(function (d) {
+                    return x(d.data.Country);
+                })
+                .endAngle(function (d) {
+                    return x(d.data.Country) + x.bandwidth();
+                })
                 .padAngle(0.01)
                 .padRadius(innerRadius))
-            .attr("transform", function () { return "rotate(" + angleOffset + ")"})
+            .attr("transform", function () {
+                return "rotate(" + angleOffset + ")"
+            })
 
             //Tooltips!
             .on('mousemove', function (d) {
@@ -841,7 +879,7 @@ function makeCharts() {
             });
 
         g.append('text')
-            .attr('x', (-ROSEWIDTH)+ 35)
+            .attr('x', (-ROSEWIDTH) + 35)
             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('font-size', 30)
@@ -858,8 +896,11 @@ function makeCharts() {
 
         label.append("text")
             .attr("transform", function (d) {
-                return (x(d.Country) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) <= Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";})
-            .text(function (d) {return d.Country;})
+                return (x(d.Country) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) <= Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
+            })
+            .text(function (d) {
+                return d.Country;
+            })
             .style("font-size", 12);
 
         var yAxis = g.append("g")
@@ -884,15 +925,127 @@ function makeCharts() {
             .attr("x", 0)
             .text(y.tickFormat(5, "s"))
             .style("font-size", 12);
-
-//        // Add colour legend -- might need to pass in data for this particular rose chart, in order to implement the legend interaction
-//        buildColourLegend();
-		
-		
-		//Build the home button which always bring user back to all donut charts
-		buildDonutsButton();
     }
 
+    //BUILD FILTERS
+    function buildFilters(dataset, title, oldData, maxAmount) {
+        var wineSvg = d3.select("svg");
+        var beerSvg = d3.select("svg");
+        var spiritSvg = d3.select("svg");
+
+        //const clonedArray = sourceArray.map(item => ({...item}));
+
+        wineSvg.append('g')
+            .attr('class', 'wineButton')
+            .on('click', function()
+            {
+                filter(wineSvg,true, false, false, oldData, dataset, title, maxAmount);
+                // if(showWine){
+                //     console.log("Wine filter is true")
+                //     for(i = 0; i < newData.length; i++){
+                //         newData[i].Wine_PerCapita = 0
+                //     }
+                //     console.log("When were removing wine")
+                //     console.log(newData)
+                //     console.log(oldData);
+                //     //Remove the rose
+                //     wineSvg.selectAll('.rose').remove();
+                //     //Rebuilt the rose
+                //     buildRose(dataset, title, oldData, newData, maxAmount, false)
+                // }
+                // else if (!showWine) {
+                //     console.log("Wine filter is FALSE")
+                //     console.log(oldData);
+                //     //Remove the rose
+                //     wineSvg.selectAll('.rose').remove();
+                //     //Rebuilt the rose
+                //     console.log("Show wine again" + oldData)
+                //     buildRose(dataset, title, oldData, oldData, maxAmount, true)
+                // }
+
+
+            })
+            .style('cursor', 'pointer')
+            .append('text')
+            .attr('width', 100)
+            .attr('height', 25)
+            .attr('x', 25)
+            .attr('y', HEIGHT + MARGINS.bottom - 100)
+            .text('WINE')
+            .style('fill', 'black')
+            .style('font-size', '24px');
+
+        beerSvg.append('g')
+            .attr('class', 'wineButton')
+            .on('click', function()
+            {
+                filter(beerSvg,false, true, false, oldData, dataset, title, maxAmount);
+
+            })
+            .style('cursor', 'pointer')
+            .append('text')
+            .attr('width', 100)
+            .attr('height', 25)
+            .attr('x', 25)
+            .attr('y', HEIGHT + MARGINS.bottom - 150)
+            .text('BEER')
+            .style('fill', 'black')
+            .style('font-size', '24px');
+
+        spiritSvg.append('g')
+            .attr('class', 'wineButton')
+            .on('click', function()
+            {
+                filter(spiritSvg,false, false, true, oldData, dataset, title, maxAmount);
+
+            })
+            .style('cursor', 'pointer')
+            .append('text')
+            .attr('width', 100)
+            .attr('height', 25)
+            .attr('x', 25)
+            .attr('y', HEIGHT + MARGINS.bottom - 200)
+            .text('SPIRITS')
+            .style('fill', 'black')
+            .style('font-size', '24px');
+    }
+
+    function filter(svg, wineClicked, beerClicked, spiritClicked, oldData, dataset, title, maxAmount){
+        var newData = oldData.map(item => ({...item}));
+        newData.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"];
+
+        //Toggle on and off the alcohol
+        if(wineClicked){
+            showWine = !showWine;
+        }
+        else if(beerClicked){
+            showBeer = !showBeer;
+        }
+        else if(spiritClicked){
+            showSpirits = !showSpirits;
+        }
+
+        //Update the data based on whats toggled
+        if(!showWine){
+            for(i = 0; i < newData.length; i++){
+                newData[i].Wine_PerCapita = 0
+            }
+        }
+        if (!showBeer) {
+            for(i = 0; i < newData.length; i++){
+                newData[i].Beer_PerCapita = 0
+            }
+        }
+        if (!showSpirits) {
+            for(i = 0; i < newData.length; i++){
+                newData[i].Spirit_PerCapita = 0
+            }
+        }
+        //Remove the rose
+        svg.selectAll('.rose').remove();
+        //Rebuilt the rose
+        buildRose(dataset, title, oldData, newData, maxAmount)
+    }
 /*
         BUILD COLOUR LEGEND
 */
@@ -966,9 +1119,15 @@ function makeCharts() {
 			.on('click', function()
 		   	{
 				//Remove the button
-				donutButtonSvg.selectAll('g.returnbtn').remove();	
-			
-				//Remove the rose
+				donutButtonSvg.selectAll('g.returnbtn').remove();
+
+				//Remove the wine filter
+                donutButtonSvg.selectAll('g.wineButton').remove();
+                showWine = true;
+                showBeer = true;
+                showSpirits = true;
+
+                //Remove the rose
 				donutButtonSvg.selectAll('.rose').remove();
 			
 				//Show the donuts
