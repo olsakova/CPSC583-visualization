@@ -694,6 +694,10 @@ function makeCharts() {
         //Set the data
         var data = customizedData;
 
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
         //Set all initial variables
         var donutSvg = d3.select("svg"),
             width = DONUTWIDTH,
@@ -728,7 +732,17 @@ function makeCharts() {
             .attr("d", path)
             .attr("fill", function (d) {
                 return color(d.data.consumption);
-            });
+            })
+        //Tooltips!
+        .on('mousemove', function (d) {
+            div.html('<span class="title">' + regionTitle + "<br>" + (d.data.consumption))
+                .style("opacity", 1)
+                .style("left", (d3.event.pageX) - div.node().clientWidth / 2 + "px")
+                .style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
+        })
+        .on('mouseout', function (d) {
+            div.style("opacity", 0)
+        });
 
         //Add label under chart with with region name
         donutSvg.append("text")
@@ -747,10 +761,9 @@ function makeCharts() {
             // Hide the donuts
 			donutSvg.selectAll('.donut').attr('display', 'none');
 			donutSvg.selectAll('.chartLegend').attr('display', 'none');
-			
+			g
 			//Draw the rose chart
             roseChart(dataset, regionTitle, roseData, roseMax);
-
         });
     }
 
