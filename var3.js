@@ -3,7 +3,7 @@
 
 */
 
-window.onload = function(){
+window.onload = function () {
     makeCharts();
 };
 
@@ -11,7 +11,7 @@ window.onload = function(){
 const MAP_WIDTH = 1000;
 const SIDE_WIDTH = 260;
 const HEIGHT = 600;
-const MARGINS = {top: 0, bottom: 500, left: 0, right: 125};
+const MARGINS = {top: 0, bottom: 500, left: 0, right: 0};
 const DONUTWIDTH = 160;
 const DONUTHEIGHT = 160;
 const ROSEWIDTH = 500;
@@ -29,9 +29,10 @@ function makeCharts() {
             .attr('width', MAP_WIDTH + MARGINS.left + MARGINS.right + SIDE_WIDTH)
             .attr('height', HEIGHT + MARGINS.top + MARGINS.bottom);
 
+		//position map with translate
         const projection = d3.geoMercator()
             .scale(130)
-            .translate( [(MAP_WIDTH / 2), 400]);
+            .translate( [MARGINS.left + (MAP_WIDTH / 2), 400]);
 
         const path = d3.geoPath().projection(projection);
 
@@ -45,46 +46,40 @@ function makeCharts() {
             max: d3.max(data, d => {return parseFloat(d.Spirit_PerCapita);})};
 
         const colorScale = d3.scaleLinear()
-        //			.domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min)/2, minMaxHappiness.max])
             .domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min) / 2, minMaxHappiness.max])
-            .range(["red", "orange", "cyan"]);
-
-        //Generate fillable glasses
-
+            .range(["#f7fcb9", "#addd8e", "#31a354"]); //Color scheme is colorblind safe according to colorbrewer
+		
         //Add a background behind the glasses
         mapSvg.append('rect')
             .attr('y', 0)
-            .attr('x', MAP_WIDTH)
+            .attr('x', MAP_WIDTH + MARGINS.left)
             .attr('height', HEIGHT)
             .attr('width', MARGINS.right + SIDE_WIDTH)
             .style('fill', "#DDD");
-
-
-        //Use these for the mouse over effect
-//		generateWineGlass([minMaxWine.min, minMaxWine.max]);
-//		generateBeerGlass([minMaxBeer.min, minMaxBeer.max]);
-//		generateMartiniGlass([minMaxSpirits.min, minMaxSpirits.max]);
 
         //Calculate avg for world summary
         let avgWine = d3.mean(data, d => {return d.Wine_PerCapita; });
         let avgBeer = d3.mean(data, d => {return d.Beer_PerCapita; });
         let avgSpirits = d3.mean(data, d => {return d.Spirit_PerCapita; });
         let avgHappiness = d3.mean(data, d => {return d.HappinessScore;});
+		
+		generateWineGlass([minMaxWine.min, minMaxWine.max]).then(() => {updateGlassFill(ext_svg.wineGlass, avgWine, avgWine.toFixed(2));});
+		generateBeerGlass([minMaxBeer.min, minMaxBeer.max]).then(() => {updateGlassFill(ext_svg.beerGlass, avgBeer, avgBeer.toFixed(2));});
+		generateMartiniGlass([minMaxSpirits.min,minMaxSpirits.max]).then(() => {updateGlassFill(ext_svg.martiniGlass, avgSpirits, avgSpirits.toFixed(2));});
+		generateSmile([minMaxHappiness.min, 10]).then(() => {
+			updateGlassFill(ext_svg.smile, avgHappiness, avgHappiness.toFixed(2) +'/10');
+			ext_svg.smile.fill.style('fill', colorScale(avgHappiness));
+		});
 
-        //Use these for the world avg
-        generateWineGlass([minMaxWine.min, minMaxWine.max]).then(() => {updateGlassFill(ext_svg.wineGlass, avgWine, avgWine.toFixed(2));});
-        generateBeerGlass([minMaxBeer.min, minMaxBeer.max]).then(() => {updateGlassFill(ext_svg.beerGlass, avgBeer, avgBeer.toFixed(2));});
-        generateMartiniGlass([minMaxSpirits.min,minMaxSpirits.max]).then(() => {updateGlassFill(ext_svg.martiniGlass, avgSpirits, avgSpirits.toFixed(2));});
-        generateSmile([minMaxHappiness.min, minMaxHappiness.max]).then(() => {
-            updateGlassFill(ext_svg.smile, avgHappiness, avgHappiness.toFixed(2) +'/10');
-            ext_svg.smile.fill.style('fill', colorScale(avgHappiness));
-        });
-
+		//Set up labels for glasses
+		
         mapSvg.append('text')
+			.attr('class', 'glasses')
             .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
             .attr('y', 20)
             .style('text-anchor', 'middle')
             .text('Global Average');
+				
         mapSvg.append('text')
             .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
             .attr('y', 35)
@@ -137,9 +132,21 @@ function makeCharts() {
 
             //Draw map background
             mapSvg.append('rect')
-                .attr('width', MAP_WIDTH)
+                .attr('width', MAP_WIDTH + MARGINS.left)
                 .attr('height', HEIGHT)
-                .style('fill', '#71A6D2');
+                .style('fill', '#71A6D2')
+				.on('click', function() {
+					
+					//Update label
+					mapSvg.selectAll('text.glasses').text("Global Average");
+				
+					//Set glass fill values
+					updateGlassFill(ext_svg.wineGlass, avgWine, avgWine.toFixed(2));
+					updateGlassFill(ext_svg.beerGlass, avgBeer, avgBeer.toFixed(2));
+					updateGlassFill(ext_svg.martiniGlass, avgSpirits, avgSpirits.toFixed(2));
+					updateGlassFill(ext_svg.smile, avgHappiness, avgHappiness.toFixed(2) +'/10');
+					ext_svg.smile.fill.style('fill', colorScale(avgHappiness));
+			});
 
             //Draw countries onto map
             mapSvg.append('g')
@@ -154,7 +161,6 @@ function makeCharts() {
                 .style('opacity', d => {return d.happiness ? 1.0 : 0.6;})
                 .style('stroke', 'black')
                 .style('stroke-width', 0.3)
-
                 //Tooltips!
                 .on('mousemove', function (d) {
 
@@ -164,17 +170,25 @@ function makeCharts() {
                             .style("opacity", 1)
                             .style("left", (d3.event.pageX) - div.node().clientWidth / 2 + "px")
                             .style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
-
-                        //Update glassses fill levels
-//						updateGlassFill(ext_svg.wineGlass, d.wine);
-//						updateGlassFill(ext_svg.beerGlass, d.beer);
-//						updateGlassFill(ext_svg.martiniGlass, d.spirit);
-
                     }
                 })
                 .on('mouseout', function (d) {
                     div.style("opacity", 0)
-                });
+                })
+				.on('click', function(d){
+					
+					if(d.happiness){
+						//Update label
+						mapSvg.selectAll('text.glasses').text( d.id == 'COD' ? 'Dem. Rep. of the Congo' : d.id == 'COG' ? 'Rep. of the Congo'  :  d.properties.name + " Consumption");
+
+						//Update glassses fill levels
+						updateGlassFill(ext_svg.wineGlass, d.wine, parseFloat(d.wine).toFixed(2));
+						updateGlassFill(ext_svg.beerGlass, d.beer, parseFloat(d.beer).toFixed(2));
+						updateGlassFill(ext_svg.martiniGlass, d.spirit, parseFloat(d.spirit).toFixed(2));
+						updateGlassFill(ext_svg.smile, d.happiness, parseFloat(d.happiness).toFixed(2) +'/10');
+						ext_svg.smile.fill.style('fill', colorScale(parseFloat(d.happiness)));
+					}
+				});
 
 
             let mapLegendLinearScale = d3.scaleLinear()
@@ -188,7 +202,7 @@ function makeCharts() {
                 .attr('width', 10)
                 .attr('height', HEIGHT)
                 .attr('class', 'legend')
-                .attr('transform', `rotate(180, ${MAP_WIDTH + 10 / 2}, ${HEIGHT / 2})`) //Flip scale so Happy is on top
+                .attr('transform', `rotate(180, ${MAP_WIDTH + 10 / 2}, ${HEIGHT / 2}),translate(${MAP_WIDTH}, 0)`) //Flip scale so Happy is on top
                 .attr('fill', 'url("#gradient")');
 
             //Build Gradient
@@ -212,7 +226,7 @@ function makeCharts() {
                 .enter()
                 .append('text')
                 .attr('class', 'legend')
-                .attr('x', MAP_WIDTH + 15)
+                .attr('x', 15)
                 .attr('y', (d) => {return mapLegendLinearScale(d);})
                 .style('text-anchor', 'start')
                 .text((d) => {return d;});
@@ -220,22 +234,22 @@ function makeCharts() {
             //Legend label
             legend.append('text')
                 .attr('class', 'legend-label')
-                .attr('x', MAP_WIDTH + 70)
+                .attr('x', 70)
                 .attr('y', HEIGHT / 2)
                 .style('text-anchor', 'middle')
                 .text('Happiness Score')
-                .attr('transform', `rotate(90, ${MAP_WIDTH + 70}, ${HEIGHT / 2})`);
+                .attr('transform', `rotate(90, ${70}, ${HEIGHT / 2})`);
 
             legend.append('text')
                 .attr('class', 'legend-label')
-                .attr('x', MAP_WIDTH + 50)
+                .attr('x', 50)
                 .attr('y', HEIGHT - 10)
                 .style('text-anchor', 'start')
                 .text('Unhappy');
 
             legend.append('text')
                 .attr('class', 'legend-label')
-                .attr('x', MAP_WIDTH + 50)
+                .attr('x', 50)
                 .attr('y', 20)
                 .style('text-anchor', 'start')
                 .text('Happy');
@@ -287,6 +301,9 @@ function makeCharts() {
 
             makeCharts(countryAbbr);
 
+			//Draw colour legend for each alcohol type
+            buildColourLegend();
+			
         });
 
         // Functions for generating fillable glasses
@@ -601,21 +618,12 @@ function makeCharts() {
                 .attr('height', MARGINS.bottom)
                 .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
                 .style('fill', "#CCC");
-            d3.select("svg").append('text')
-                .attr('y', HEIGHT + 25)
-                .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
-                .style('text-anchor', 'middle')
-                .style('font-size', '20px')
-                .text("Alcohol Consumption by Region");
+			
+			//Draw colour legend for each alcohol type
+            buildColourLegend();
 
             //Build all donut charts, and pass in data to be used for rose chart
             buildDonutCharts(data, regionsByAlcohol4, allRegionsRoseFormat);
-
-            //Draw colour legend for each alcohol type
-            buildColourLegend();
-
-            //Build the home button which always bring user back to all donut charts
-            buildDonutsButton(data, regionsByAlcohol4, allRegionsRoseFormat);
         }
     }
 
@@ -624,33 +632,41 @@ function makeCharts() {
 
         var donutData;
 
+		donutData = constructDonutData(regionsArray, 7);
+        donutChart(data, donutData, 0, 140, "North America", roseData[7], 600);
+		
+		donutData = constructDonutData(regionsArray, 2);
+        donutChart(data, donutData, 0, 360, "South America", roseData[2], 500);
+		
+		donutData = constructDonutData(regionsArray, 4);
+        donutChart(data, donutData, 252 * 1, 140, "Western Europe", roseData[4], 600);
+		
         donutData = constructDonutData(regionsArray, 0);
-        donutChart(data, donutData, 0, 140, "Central and Eastern Europe", roseData[0], 700);
+        donutChart(data, donutData, 252 * 1, 360, "Central and Eastern Europe", roseData[0], 700);
 
+		donutData = constructDonutData(regionsArray, 5);
+        donutChart(data, donutData, 252 * 2, 140, "Middle East & North Africa", roseData[5], 200);
+		
         donutData = constructDonutData(regionsArray, 1);
-        donutChart(data, donutData, 277, 140, "Sub-Saharan Africa", roseData[1], 500);
-
-        donutData = constructDonutData(regionsArray, 2);
-        donutChart(data, donutData, 277 * 2, 140, "South America", roseData[2], 500);
-
-        donutData = constructDonutData(regionsArray, 3);
-        donutChart(data, donutData, 277 * 3, 140, "Australia & New Zealand", roseData[3], 600);
-
-        donutData = constructDonutData(regionsArray, 4);
-        donutChart(data, donutData, 0, 360, "Western Europe", roseData[4], 600);
-
-        donutData = constructDonutData(regionsArray, 5);
-        donutChart(data, donutData, 277, 360, "Middle East & North Africa", roseData[5], 200);
-
-        donutData = constructDonutData(regionsArray, 6);
-        donutChart(data, donutData, 277 * 2, 360, "South East Asia", roseData[6], 400);
-
-        donutData = constructDonutData(regionsArray, 7);
-        donutChart(data, donutData, 277 * 3, 360, "North America", roseData[7], 600);
+        donutChart(data, donutData, 252 * 2, 360, "Sub-Saharan Africa", roseData[1], 500);
 
         donutData = constructDonutData(regionsArray, 8);
-        donutChart(data, donutData, 277 * 4, 360, "Eastern Asia", roseData[8], 500);
+        donutChart(data, donutData, 252 * 3, 140, "Eastern Asia", roseData[8], 500);
 
+		donutData = constructDonutData(regionsArray, 6);
+        donutChart(data, donutData, 252 * 3, 360, "South East Asia", roseData[6], 400);
+		
+        donutData = constructDonutData(regionsArray, 3);
+        donutChart(data, donutData, 252 * 4, 360, "Australia & New Zealand", roseData[3], 600);
+		
+		//Draw section lavel
+		d3.select("svg").append('text')
+			.attr('class', 'donut')
+			.attr('y', HEIGHT + 25)
+			.attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
+			.style('text-anchor', 'middle')
+			.style('font-size', '20px')
+			.text("Alcohol Consumption by Region");
     }
 
     // Format the data such that the donut code can make sense of it
@@ -679,7 +695,7 @@ function makeCharts() {
         var donutSvg = d3.select("svg"),
             width = DONUTWIDTH,
             height = DONUTHEIGHT,
-            margin = {top: 0, right: 20, bottom: 40, left: -40},
+            margin = {top: 0, right: 20, bottom: 40, left: -50},
             titlepadding = 100,
             chartWidth = width + margin.left + margin.right,
             chartHeight = height + margin.top + margin.bottom;
@@ -688,7 +704,9 @@ function makeCharts() {
         var color = d3.scaleOrdinal(["#5c0010", "#d28816", "#00CCCC"]);
 
         //Build donut chart svg
-        let g = donutSvg.append("g").attr("transform", "translate(" + (chartWidth + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
+        let g = donutSvg.append("g")
+			.attr('class', 'donut')
+		.attr("transform", "translate(" + (chartWidth + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
 
         var donut = d3.pie().value(function (d) {
             return d.consumption;
@@ -711,6 +729,7 @@ function makeCharts() {
 
         //Add label under chart with with region name
         donutSvg.append("text")
+			.attr('class', 'donut')
             .attr("x", chartWidth + leftOffset)
             .attr("y", HEIGHT + topOffset + titlepadding)
             .attr("dy", ".35em")
@@ -722,13 +741,10 @@ function makeCharts() {
         //INTERACTION!
         g.on("click", function () {
 
-            // Draw a background for the rose charts -- ie. hide the donuts
-            d3.select("svg").append("rect")
-                .attr('y', HEIGHT)
-                .attr('height', MARGINS.bottom)
-                .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
-                .style('fill', "#CCC");
-
+            // Hide the donuts
+			donutSvg.selectAll('.donut').attr('opacity', 0);
+			
+			//Draw the rose chart
             roseChart(dataset, regionTitle, roseData, roseMax);
 
         });
@@ -759,7 +775,9 @@ function makeCharts() {
             outerRadius = (Math.min(chartWidth, chartHeight) / 2);
 
         // Build Rose SVG
-        let g = roseSvg.append("g").attr("transform", "translate(" + (chartWidth / 2 + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
+        let g = roseSvg.append("g")
+		.attr('class', 'rose')
+		.attr("transform", "translate(" + (chartWidth / 2 + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
 
         var angle = d3.scaleLinear()
             .range([0, 2 * Math.PI]);
@@ -867,9 +885,12 @@ function makeCharts() {
             .text(y.tickFormat(5, "s"))
             .style("font-size", 12);
 
-        // Add colour legend -- might need to pass in data for this particular rose chart, in order to implement the legend interaction
-        buildColourLegend();
-
+//        // Add colour legend -- might need to pass in data for this particular rose chart, in order to implement the legend interaction
+//        buildColourLegend();
+		
+		
+		//Build the home button which always bring user back to all donut charts
+		buildDonutsButton();
     }
 
 /*
@@ -879,7 +900,7 @@ function makeCharts() {
     function buildColourLegend() {
 
         var legendSvg = d3.select("svg");
-        var legendX = MAP_WIDTH + 120;
+        var legendX = MAP_WIDTH + 35;
         var legendY = HEIGHT + 140 - DONUTHEIGHT / 2;
 
         //Wine legend item
@@ -934,70 +955,72 @@ function makeCharts() {
     }
 
     //BUILD DONUTS BUTTON
-    function buildDonutsButton(data, regionsArray, roseData) {
+    function buildDonutsButton() {
 
         //Donuts button SVG: a grey tab above the charts
         var donutButtonSvg = d3.select("svg");
 
-        donutButtonSvg.append("rect")
-            .attr("width", 70)
-            .attr("height", 50)
-            .attr("y", HEIGHT-50)
-            .style("fill", "#CCC")
-            .style("stroke", "black")
-            .attr("right","stroke-dasharray(2, 3)")
-            .on("click", function(){
+		donutButtonSvg
+			.append('g')
+			.attr('class', 'returnbtn')
+			.on('click', function()
+		   	{
+				//Remove the button
+				donutButtonSvg.selectAll('g.returnbtn').remove();	
+			
+				//Remove the rose
+				donutButtonSvg.selectAll('.rose').remove();
+			
+				//Show the donuts
+				donutButtonSvg.selectAll('.donut').attr('opacity', 1);
+			
+			})
+			.style('cursor', 'pointer')
+			.append('text')
+			.attr('width', 100)
+			.attr('height', 25)
+			.attr('x', 25)
+			.attr('y', HEIGHT + MARGINS.bottom - 25)
+			.text('← regions')
+			.style('fill', 'black')
+			.style('font-size', '18px');
+		
+//        donutButtonSvg.append("rect")
+//            .attr("width", 70)
+//            .attr("height", 50)
+//            .attr("y", HEIGHT-50)
+//            .style("fill", "#CCC")
+//            .style("stroke", "black")
+//            .attr("right","stroke-dasharray(2, 3)")
+//            .on("click", function(){
+//
+//                // "Hide" current rose chart
+//                d3.select("svg").append('rect')
+//                    .attr('y', HEIGHT)
+//                    .attr('x', 0)
+//                    .attr('height', ROSEHEIGHT)
+//                    .attr('width', ROSEWIDTH * 2)
+//                    .style('fill', "#CCC");
+//
+//                // Draw header for donut charts
+//                d3.select("svg").append('text')
+//                    .attr('y', HEIGHT + 25)
+//                    .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
+//                    .style('text-anchor', 'middle')
+//                    .style('font-size', '20px')
+//                    .text("Alcohol Consumption by Region");
+//
+//                // Build & draw all donut charts
+//                buildDonutCharts(data, regionsArray, roseData);
+//            });
+//
+//        donutButtonSvg.append("text")
+//            .attr("x", 2)
+//            .attr("y", HEIGHT-60)
+//            .attr("dy", ".35em")
+//            .text("return")
+//            .style("stroke", "white");
 
-                // "Hide" current rose chart
-                d3.select("svg").append('rect')
-                    .attr('y', HEIGHT)
-                    .attr('x', 0)
-                    .attr('height', ROSEHEIGHT)
-                    .attr('width', ROSEWIDTH * 2)
-                    .style('fill', "#CCC");
-
-                // Draw header for donut charts
-                d3.select("svg").append('text')
-                    .attr('y', HEIGHT + 25)
-                    .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
-                    .style('text-anchor', 'middle')
-                    .style('font-size', '20px')
-                    .text("Alcohol Consumption by Region");
-
-                // Build & draw all donut charts
-                buildDonutCharts(data, regionsArray, roseData);
-            });
-
-        donutButtonSvg.append("text")
-            .attr("x", 2)
-            .attr("y", HEIGHT-60)
-            .attr("dy", ".35em")
-            .text("DONUTS")
-            .style("stroke", "white");
-
-
-        /* TM: below is a mess of me attempting to import an external svg image to use for home button.
-        *  If you uncomment it, a giant home symbol will be on top of everything. */
-
-        // var homeSvg = d3.select("svg");
-        //
-        // d3.xml('home.svg')
-        //     .then(homebutton => {
-        //         homeSvg.node().appendChild(homebutton.getElementsByTagName('svg')[0]);
-        //         useHomeButton(this);
-        //     });
-        //
-        // let homeButton = d3.select("#homebutton")
-        //     .attr('x', MAP_WIDTH + MARGINS.right + 100)
-        //     .attr('y', 50);
-        //
-        // function useHomeButton(homeSvg) {
-        //     d3.select(homeSvg)
-        //         .on("click", function () {
-        //             console.log("CLICKED HOME BUTTON!");   //TEST --> passed. Click is recognized
-        //         })
-        //         //.attr("transform", "translate (100, 100)") // Cannot transform this
-        // }
      }
 }
 
