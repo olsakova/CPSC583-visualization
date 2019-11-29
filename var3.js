@@ -742,7 +742,7 @@ function makeCharts() {
         g.on("click", function () {
 
             // Hide the donuts
-			donutSvg.selectAll('.donut').attr('opacity', 0);
+			donutSvg.selectAll('.donut').attr('display', 'none');
 			
 			//Draw the rose chart
             roseChart(dataset, regionTitle, roseData, roseMax);
@@ -972,7 +972,7 @@ function makeCharts() {
 				donutButtonSvg.selectAll('.rose').remove();
 			
 				//Show the donuts
-				donutButtonSvg.selectAll('.donut').attr('opacity', 1);
+				donutButtonSvg.selectAll('.donut').attr('display', 'true');
 			
 			})
 			.style('cursor', 'pointer')
@@ -985,42 +985,6 @@ function makeCharts() {
 			.style('fill', 'black')
 			.style('font-size', '18px');
 		
-//        donutButtonSvg.append("rect")
-//            .attr("width", 70)
-//            .attr("height", 50)
-//            .attr("y", HEIGHT-50)
-//            .style("fill", "#CCC")
-//            .style("stroke", "black")
-//            .attr("right","stroke-dasharray(2, 3)")
-//            .on("click", function(){
-//
-//                // "Hide" current rose chart
-//                d3.select("svg").append('rect')
-//                    .attr('y', HEIGHT)
-//                    .attr('x', 0)
-//                    .attr('height', ROSEHEIGHT)
-//                    .attr('width', ROSEWIDTH * 2)
-//                    .style('fill', "#CCC");
-//
-//                // Draw header for donut charts
-//                d3.select("svg").append('text')
-//                    .attr('y', HEIGHT + 25)
-//                    .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
-//                    .style('text-anchor', 'middle')
-//                    .style('font-size', '20px')
-//                    .text("Alcohol Consumption by Region");
-//
-//                // Build & draw all donut charts
-//                buildDonutCharts(data, regionsArray, roseData);
-//            });
-//
-//        donutButtonSvg.append("text")
-//            .attr("x", 2)
-//            .attr("y", HEIGHT-60)
-//            .attr("dy", ".35em")
-//            .text("return")
-//            .style("stroke", "white");
-
      }
 }
 
