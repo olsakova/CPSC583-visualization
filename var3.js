@@ -615,7 +615,7 @@ function makeCharts() {
             buildColourLegend();
 
             //Build the home button which always bring user back to all donut charts
-            buildHomeButton(data, regionsByAlcohol4, allRegionsRoseFormat);
+            buildDonutsButton(data, regionsByAlcohol4, allRegionsRoseFormat);
         }
     }
 
@@ -823,8 +823,7 @@ function makeCharts() {
             });
 
         g.append('text')
-            .attr('y', (ROSEHEIGHT/8))
-            .attr('x', (-ROSEWIDTH) + 15)
+            .attr('x', (-ROSEWIDTH)+ 35)
             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('font-size', 30)
@@ -841,11 +840,8 @@ function makeCharts() {
 
         label.append("text")
             .attr("transform", function (d) {
-                return (x(d.Country) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) <= Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
-            })
-            .text(function (d) {
-                return d.Country;
-            })
+                return (x(d.Country) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) <= Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";})
+            .text(function (d) {return d.Country;})
             .style("font-size", 12);
 
         var yAxis = g.append("g")
@@ -937,19 +933,20 @@ function makeCharts() {
             .text("Spirits Consumption");
     }
 
-    //BUILD HOME BUTTON
-    function buildHomeButton(data, regionsArray, roseData) {
+    //BUILD DONUTS BUTTON
+    function buildDonutsButton(data, regionsArray, roseData) {
 
-        //Home button SVG: a white square
-        d3.select("svg").append("rect")
-            .attr("width", 50)
+        //Donuts button SVG: a grey tab above the charts
+        var donutButtonSvg = d3.select("svg");
+
+        donutButtonSvg.append("rect")
+            .attr("width", 70)
             .attr("height", 50)
-            .attr("x", 0)
             .attr("y", HEIGHT-50)
-            .style("fill", "white")
+            .style("fill", "#CCC")
             .style("stroke", "black")
+            .attr("right","stroke-dasharray(2, 3)")
             .on("click", function(){
-                console.log("HOME BUTTON CLICKED!");
 
                 // "Hide" current rose chart
                 d3.select("svg").append('rect')
@@ -959,13 +956,23 @@ function makeCharts() {
                     .attr('width', ROSEWIDTH * 2)
                     .style('fill', "#CCC");
 
+                // Draw header for donut charts
+                d3.select("svg").append('text')
+                    .attr('y', HEIGHT + 25)
+                    .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
+                    .style('text-anchor', 'middle')
+                    .style('font-size', '20px')
+                    .text("Alcohol Consumption by Region");
+
+                // Build & draw all donut charts
                 buildDonutCharts(data, regionsArray, roseData);
             });
-        d3.select("svg").append("text")
+
+        donutButtonSvg.append("text")
             .attr("x", 2)
             .attr("y", HEIGHT-60)
             .attr("dy", ".35em")
-            .text("HOME")
+            .text("DONUTS")
             .style("stroke", "white");
 
 
