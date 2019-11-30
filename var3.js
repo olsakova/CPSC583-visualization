@@ -164,6 +164,7 @@ function makeCharts() {
                 .style('opacity', d => {return d.happiness ? 1.0 : 0.6;})
                 .style('stroke', 'black')
                 .style('stroke-width', 0.3)
+				.style('cursor', (d) => {return (d.happiness) ? "pointer" : 'default'})
                 //Tooltips!
                 .on('mousemove', function (d) {
 
@@ -613,7 +614,7 @@ function makeCharts() {
             //An array which contains all arrays of region data, formatted appropriately for a rose chart.
             var allRegionsRoseFormat = [easternEurope2, subAfrica2, southAmerica2,
                 aussie2, westernEurope2, middleEast2,
-                seAsia2, northAmerica2, eastAsia2];
+                seAsia2, northAmerica2, eastAsia2, countryAbbr];
 
             //Draw background behind donuts
             d3.select("svg").append('rect')
@@ -636,31 +637,31 @@ function makeCharts() {
         var donutData;
 
 		donutData = constructDonutData(regionsArray, 7);
-        donutChart(data, donutData, 0, 140, "North America", roseData[7], 600);
+        donutChart(data, donutData, 0, 140, "North America", roseData[7], 600, roseData[9]);
 		
 		donutData = constructDonutData(regionsArray, 2);
-        donutChart(data, donutData, 0, 360, "South America", roseData[2], 500);
+        donutChart(data, donutData, 0, 360, "South America", roseData[2], 500, roseData[9]);
 		
 		donutData = constructDonutData(regionsArray, 4);
-        donutChart(data, donutData, 252 * 1, 140, "Western Europe", roseData[4], 600);
+        donutChart(data, donutData, 252 * 1, 140, "Western Europe", roseData[4], 600, roseData[9]);
 		
         donutData = constructDonutData(regionsArray, 0);
-        donutChart(data, donutData, 252 * 1, 360, "Central and Eastern Europe", roseData[0], 700);
+        donutChart(data, donutData, 252 * 1, 360, "Central and Eastern Europe", roseData[0], 700, roseData[9]);
 
 		donutData = constructDonutData(regionsArray, 5);
-        donutChart(data, donutData, 252 * 2, 140, "Middle East & North Africa", roseData[5], 200);
+        donutChart(data, donutData, 252 * 2, 140, "Middle East & North Africa", roseData[5], 200, roseData[9]);
 		
         donutData = constructDonutData(regionsArray, 1);
-        donutChart(data, donutData, 252 * 2, 360, "Sub-Saharan Africa", roseData[1], 500);
+        donutChart(data, donutData, 252 * 2, 360, "Sub-Saharan Africa", roseData[1], 500, roseData[9]);
 
         donutData = constructDonutData(regionsArray, 8);
-        donutChart(data, donutData, 252 * 3, 140, "Eastern Asia", roseData[8], 500);
+        donutChart(data, donutData, 252 * 3, 140, "Eastern Asia", roseData[8], 500, roseData[9]);
 
 		donutData = constructDonutData(regionsArray, 6);
-        donutChart(data, donutData, 252 * 3, 360, "South East Asia", roseData[6], 400);
+        donutChart(data, donutData, 252 * 3, 360, "South East Asia", roseData[6], 400, roseData[9]);
 		
         donutData = constructDonutData(regionsArray, 3);
-        donutChart(data, donutData, 252 * 4, 360, "Australia & New Zealand", roseData[3], 600);
+        donutChart(data, donutData, 252 * 4, 360, "Australia & New Zealand", roseData[3], 600, roseData[9]);
 		
 		//Draw section lavel
 		d3.select("svg").append('text')
@@ -689,7 +690,7 @@ function makeCharts() {
         based on pie chart example: https://scrimba.com/p/pPrZLhD/c6ZPkH3
     */
 
-    function donutChart(dataset, customizedData, leftOffset, topOffset, regionTitle, roseData, roseMax) {
+    function donutChart(dataset, customizedData, leftOffset, topOffset, regionTitle, roseData, roseMax, abbr) {
 
         //Set the data
         var data = customizedData;
@@ -756,14 +757,15 @@ function makeCharts() {
             });
 
         //INTERACTION!
-        g.on("click", function () {
+        g.style('cursor', 'pointer')
+			.on("click", function () {
 
             // Hide the donuts
 			donutSvg.selectAll('.donut').attr('display', 'none');
 			donutSvg.selectAll('.chartLegend').attr('display', 'none');
 			g
 			//Draw the rose chart
-            roseChart(dataset, regionTitle, roseData, roseMax);
+            roseChart(dataset, regionTitle, roseData, roseMax, abbr);
         });
     }
 
@@ -772,11 +774,8 @@ function makeCharts() {
        BUILD ROSE CHART CORRESPONDING TO THE CLICKED DONUT CHART
 */
 
-    function roseChart(dataset, title, customizedData, maxAmount) {
-        buildRose(dataset, title, customizedData, customizedData, maxAmount);
-
-//        // Add colour legend -- might need to pass in data for this particular rose chart, in order to implement the legend interaction
-//        buildColourLegend();
+    function roseChart(dataset, title, customizedData, maxAmount, abbr) {
+        buildRose(dataset, title, customizedData, customizedData, maxAmount, abbr);
 
 		//Build the home button which always bring user back to all donut charts
 		buildDonutsButton();
@@ -785,10 +784,11 @@ function makeCharts() {
         buildFilters(dataset, title, customizedData, maxAmount);
     }
 
-    function buildRose(dataset, title, customizedData, filteredData, maxAmount) {
+    function buildRose(dataset, title, customizedData, filteredData, maxAmount, abbr) {
         if (!showWine || !showBeer || !showSpirits){
             customizedData = filteredData;
         }
+				
         // Set div for tool tip
         var div = d3.select("body").append("div")
             .attr("class", "tooltip")
@@ -882,7 +882,7 @@ function makeCharts() {
 
             //Tooltips!
             .on('mousemove', function (d) {
-                div.html('<span class="title">' + (d.data.Country) + "</span></br> Wine: " + d.data.Wine_PerCapita + "</br>Spirits: " + d.data.Spirit_PerCapita + "</br> Beer: " + d.data.Beer_PerCapita)
+                div.html('<span class="title">' + (getKeyByValue(abbr, d.data.Country)) + "</span></br> Wine: " + d.data.Wine_PerCapita + "</br>Spirits: " + d.data.Spirit_PerCapita + "</br> Beer: " + d.data.Beer_PerCapita)
                     .style("opacity", 1)
                     .style("left", (d3.event.pageX) - div.node().clientWidth / 2 + "px")
                     .style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
@@ -1139,5 +1139,10 @@ function makeCharts() {
 			.style('font-size', '18px');
 		
      }
+	
+	// Src: https://stackoverflow.com/a/28191966
+	function getKeyByValue(object, value) {
+	  return Object.keys(object).find(key => object[key] === value);
+	}
 }
 
