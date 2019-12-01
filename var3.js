@@ -646,7 +646,7 @@ function makeCharts() {
         donutChart(data, donutData, 252 * 1, 140, "Western Europe", roseData[4], 600, roseData[9]);
 		
         donutData = constructDonutData(regionsArray, 0);
-        donutChart(data, donutData, 252 * 1, 360, "Central and Eastern Europe", roseData[0], 800, roseData[9]);
+        donutChart(data, donutData, 252 * 1, 360, "Central & Eastern Europe", roseData[0], 800, roseData[9]);
 
 		donutData = constructDonutData(regionsArray, 5);
         donutChart(data, donutData, 252 * 2, 140, "Middle East & North Africa", roseData[5], 200, roseData[9]);
@@ -663,7 +663,7 @@ function makeCharts() {
         donutData = constructDonutData(regionsArray, 3);
         donutChart(data, donutData, 252 * 4, 360, "Australia & New Zealand", roseData[3], 600, roseData[9]);
 		
-		//Draw section lavel
+		//Draw section label
 		d3.select("svg").append('text')
 			.attr('class', 'donut')
 			.attr('y', HEIGHT + 25)
@@ -694,6 +694,10 @@ function makeCharts() {
 
         //Set the data
         var data = customizedData;
+
+        var totalRegionConsumption = d3.sum(data, function(d){return d.consumption});
+
+        console.log("TOTAL CONSUMPTION FOR", regionTitle + ":", totalRegionConsumption);       //TESTING
 
         var div = d3.select("body").append("div")
             .attr("class", "tooltip")
@@ -734,12 +738,26 @@ function makeCharts() {
             .attr("fill", function (d) {
                 return color(d.data.consumption);
             })
+
         //Tooltips!
         .on('mousemove', function (d) {
-            div.html('<span class="title">' + regionTitle + "<br>" + (d.data.consumption))
+            var alcoholType = "";
+            var consumptionPercent;
+
+            //Print alcohol type nicely
+            if (d.data.alcohol == "Wine_PerCapita"){alcoholType = "Wine: ";}
+            if (d.data.alcohol == "Beer_PerCapita"){alcoholType = "Beer: ";}
+            if (d.data.alcohol == "Spirit_PerCapita"){alcoholType = "Spirits: ";}
+
+            //Calculate and format percentage
+            consumptionPercent = (d.data.consumption/totalRegionConsumption *100).toFixed(2);
+
+            //Make Tooltip
+            div.html('<span class="title">' + regionTitle + "<br>" + (alcoholType) + (consumptionPercent) + "% <br>" + (d.data.consumption) + " L per capita")
                 .style("opacity", 1)
                 .style("left", (d3.event.pageX) - div.node().clientWidth / 2 + "px")
                 .style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
+
         })
         .on('mouseout', function (d) {
             div.style("opacity", 0)
@@ -960,14 +978,14 @@ function makeCharts() {
             .attr('fill-opacity', '1.0')
             .on('click', function() {
                 filter(wineSvg,true, false, false, oldData, dataset, title, maxAmount, abbr);
-                let button = d3.select(this)
+                let button = d3.select(this);
                 if(button.style("fill-opacity") === '1'){
                     button.style("fill-opacity", 0.2);
                 }
                 else {
                     button.style("fill-opacity", 1.0);
                 }
-            })
+            });
         wineSvg.append('g')
             .attr('class', 'wineButton')
             .style("pointer-events", "none")
@@ -995,14 +1013,14 @@ function makeCharts() {
             .on('click', function()
             {
                 filter(beerSvg,false, true, false, oldData, dataset, title, maxAmount, abbr);
-                let button = d3.select(this)
+                let button = d3.select(this);
                 if(button.style("fill-opacity") === '1'){
                     button.style("fill-opacity", 0.2);
                 }
                 else {
                     button.style("fill-opacity", 1.0);
                 }
-            })
+            });
         beerSvg.append('g')
             .attr('class', 'beerButton')
             .style("pointer-events", "none")
@@ -1030,14 +1048,14 @@ function makeCharts() {
             .on('click', function()
             {
                 filter(spiritSvg,false, false, true, oldData, dataset, title, maxAmount, abbr);
-                let button = d3.select(this)
+                let button = d3.select(this);
                 if(button.style("fill-opacity") === '1'){
                     button.style("fill-opacity", 0.2);
                 }
                 else {
                     button.style("fill-opacity", 1.0);
                 }
-            })
+            });
         spiritSvg.append('g')
             .attr('class', 'spiritButton')
             .style("pointer-events", "none")
@@ -1108,10 +1126,7 @@ function makeCharts() {
             .attr("y", legendY)
             .attr('rx', 10)
             .attr('ry', 10)
-            .style("fill", "#5c0010")
-            .on("click", function(){
-                // FILTER FOR WINE: INTERACTION IMPLEMENTATION HERE
-            });
+            .style("fill", "#5c0010");
         legendSvg.append("text")
             .attr('class', 'chartLegend')
             .attr("x", legendX + 40)
@@ -1128,10 +1143,7 @@ function makeCharts() {
             .attr("y", legendY + 60)
             .attr('rx', 10)
             .attr('ry', 10)
-            .style("fill", "#d28816")
-            .on("click", function(){
-            // FILTER FOR BEER: INTERACTION IMPLEMENTATION HERE
-            });
+            .style("fill", "#d28816");
 
         legendSvg.append("text")
             .attr('class', 'chartLegend')
@@ -1149,10 +1161,7 @@ function makeCharts() {
             .attr("y", legendY + 120)
             .attr('rx', 10)
             .attr('ry', 10)
-            .style("fill", "#00CCCC")
-        .on("click", function(){
-        // FILTER FOR SPIRITS: INTERACTION IMPLEMENTATION HERE
-        });
+            .style("fill", "#00CCCC");
 
         legendSvg.append("text")
             .attr('class', 'chartLegend')
