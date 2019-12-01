@@ -947,50 +947,104 @@ function makeCharts() {
         var beerSvg = d3.select("svg");
         var spiritSvg = d3.select("svg");
 
+        //Wine legend item
+        wineSvg.append("rect")
+            .attr('class', 'wineButton')
+            .style('cursor', 'pointer')
+            .attr('width', 150)
+            .attr('height', 40)
+            .attr('x', 120)
+            .attr('y', HEIGHT + MARGINS.bottom - 135)
+            .attr('rx', 10)
+            .attr('ry', 10)
+            .style("fill", "#5c0010")
+            .attr('fill-opacity', '1.0')
+            .on('click', function() {
+                filter(wineSvg,true, false, false, oldData, dataset, title, maxAmount);
+                let button = d3.select(this)
+                if(button.style("fill-opacity") === '1'){
+                    button.style("fill-opacity", 0.2);
+                }
+                else {
+                    button.style("fill-opacity", 1.0);
+                }
+            })
         wineSvg.append('g')
             .attr('class', 'wineButton')
-            .on('click', function()
-            {
-                filter(wineSvg,true, false, false, oldData, dataset, title, maxAmount);
-            })
-            .style('cursor', 'pointer')
             .append('text')
+            .attr('text-anchor', 'middle')
             .attr('width', 100)
             .attr('height', 25)
-            .attr('x', 100)
-            .attr('y', HEIGHT + MARGINS.bottom - 100)
+            .attr('x', 190)
+            .attr('y', HEIGHT + MARGINS.bottom - 107)
             .text('WINE')
-            .style('fill', 'black')
+            .style('fill', 'white')
             .style('font-size', '24px');
 
-        beerSvg.append('g')
-            .attr('class', 'wineButton')
+        beerSvg.append("rect")
+            .attr('class', 'beerButton')
+            .style('cursor', 'pointer')
+            .attr('width', 150)
+            .attr('height', 40)
+            .attr('x', 120)
+            .attr('y', HEIGHT + MARGINS.bottom - 185)
+            .attr('rx', 10)
+            .attr('ry', 10)
+            .style("fill", "#d28816")
+            .attr('fill-opacity', '1.0')
             .on('click', function()
             {
                 filter(beerSvg,false, true, false, oldData, dataset, title, maxAmount);
+                let button = d3.select(this)
+                if(button.style("fill-opacity") === '1'){
+                    button.style("fill-opacity", 0.2);
+                }
+                else {
+                    button.style("fill-opacity", 1.0);
+                }
             })
-            .style('cursor', 'pointer')
+        beerSvg.append('g')
+            .attr('class', 'beerButton')
             .append('text')
+            .attr('text-anchor', 'middle')
             .attr('width', 100)
             .attr('height', 25)
-            .attr('x', 100)
-            .attr('y', HEIGHT + MARGINS.bottom - 150)
+            .attr('x', 195)
+            .attr('y', HEIGHT + MARGINS.bottom - 157)
             .text('BEER')
             .style('fill', 'black')
             .style('font-size', '24px');
 
-        spiritSvg.append('g')
-            .attr('class', 'wineButton')
+        spiritSvg.append("rect")
+            .attr('class', 'spiritButton')
+            .style('cursor', 'pointer')
+            .attr('width', 150)
+            .attr('height', 40)
+            .attr('x', 120)
+            .attr('y', HEIGHT + MARGINS.bottom - 235)
+            .attr('rx', 10)
+            .attr('ry', 10)
+            .attr('fill-opacity', '1.0')
+            .style("fill", "#00CCCC")
             .on('click', function()
             {
                 filter(spiritSvg,false, false, true, oldData, dataset, title, maxAmount);
+                let button = d3.select(this)
+                if(button.style("fill-opacity") === '1'){
+                    button.style("fill-opacity", 0.2);
+                }
+                else {
+                    button.style("fill-opacity", 1.0);
+                }
             })
-            .style('cursor', 'pointer')
+        spiritSvg.append('g')
+            .attr('class', 'spiritButton')
             .append('text')
+            .attr('text-anchor', 'middle')
             .attr('width', 100)
             .attr('height', 25)
-            .attr('x', 100)
-            .attr('y', HEIGHT + MARGINS.bottom - 200)
+            .attr('x', 195)
+            .attr('y', HEIGHT + MARGINS.bottom - 207)
             .text('SPIRITS')
             .style('fill', 'black')
             .style('font-size', '24px');
@@ -1116,6 +1170,11 @@ function makeCharts() {
 
 				//Remove the wine filter
                 donutButtonSvg.selectAll('g.wineButton').remove();
+                donutButtonSvg.selectAll('g.spiritButton').remove();
+                donutButtonSvg.selectAll('g.beerButton').remove();
+                donutButtonSvg.selectAll('rect.wineButton').remove();
+                donutButtonSvg.selectAll('rect.spiritButton').remove();
+                donutButtonSvg.selectAll('rect.beerButton').remove();
                 showWine = true;
                 showBeer = true;
                 showSpirits = true;
