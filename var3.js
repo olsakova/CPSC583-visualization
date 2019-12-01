@@ -763,7 +763,6 @@ function makeCharts() {
             // Hide the donuts
 			donutSvg.selectAll('.donut').attr('display', 'none');
 			donutSvg.selectAll('.chartLegend').attr('display', 'none');
-			g
 			//Draw the rose chart
             roseChart(dataset, regionTitle, roseData, roseMax, abbr);
         });
@@ -781,7 +780,7 @@ function makeCharts() {
 		buildDonutsButton();
 
 		//add the filters
-        buildFilters(dataset, title, customizedData, maxAmount);
+        buildFilters(dataset, title, customizedData, maxAmount, abbr);
     }
 
     function buildRose(dataset, title, customizedData, filteredData, maxAmount, abbr) {
@@ -942,7 +941,7 @@ function makeCharts() {
     }
 
     // BUILD FILTERS
-    function buildFilters(dataset, title, oldData, maxAmount) {
+    function buildFilters(dataset, title, oldData, maxAmount, abbr) {
         var wineSvg = d3.select("svg");
         var beerSvg = d3.select("svg");
         var spiritSvg = d3.select("svg");
@@ -960,7 +959,7 @@ function makeCharts() {
             .style("fill", "#5c0010")
             .attr('fill-opacity', '1.0')
             .on('click', function() {
-                filter(wineSvg,true, false, false, oldData, dataset, title, maxAmount);
+                filter(wineSvg,true, false, false, oldData, dataset, title, maxAmount, abbr);
                 let button = d3.select(this)
                 if(button.style("fill-opacity") === '1'){
                     button.style("fill-opacity", 0.2);
@@ -995,7 +994,7 @@ function makeCharts() {
             .attr('fill-opacity', '1.0')
             .on('click', function()
             {
-                filter(beerSvg,false, true, false, oldData, dataset, title, maxAmount);
+                filter(beerSvg,false, true, false, oldData, dataset, title, maxAmount, abbr);
                 let button = d3.select(this)
                 if(button.style("fill-opacity") === '1'){
                     button.style("fill-opacity", 0.2);
@@ -1030,7 +1029,7 @@ function makeCharts() {
             .style("fill", "#00CCCC")
             .on('click', function()
             {
-                filter(spiritSvg,false, false, true, oldData, dataset, title, maxAmount);
+                filter(spiritSvg,false, false, true, oldData, dataset, title, maxAmount, abbr);
                 let button = d3.select(this)
                 if(button.style("fill-opacity") === '1'){
                     button.style("fill-opacity", 0.2);
@@ -1053,7 +1052,7 @@ function makeCharts() {
             .style('font-size', '24px');
     }
 
-    function filter(svg, wineClicked, beerClicked, spiritClicked, oldData, dataset, title, maxAmount){
+    function filter(svg, wineClicked, beerClicked, spiritClicked, oldData, dataset, title, maxAmount, abbr){
         var newData = oldData.map(item => ({...item}));
         newData.columns = ["Region", "Wine_PerCapita", "Beer_PerCapita", "Spirit_PerCapita"];
 
@@ -1087,7 +1086,7 @@ function makeCharts() {
         //Remove the rose
         svg.selectAll('.rose').remove();
         //Rebuild the rose
-        buildRose(dataset, title, oldData, newData, maxAmount)
+        buildRose(dataset, title, oldData, newData, maxAmount, abbr)
     }
 
 /*
