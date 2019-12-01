@@ -646,7 +646,7 @@ function makeCharts() {
         donutChart(data, donutData, 252 * 1, 140, "Western Europe", roseData[4], 600, roseData[9]);
 		
         donutData = constructDonutData(regionsArray, 0);
-        donutChart(data, donutData, 252 * 1, 360, "Central and Eastern Europe", roseData[0], 700, roseData[9]);
+        donutChart(data, donutData, 252 * 1, 360, "Central and Eastern Europe", roseData[0], 800, roseData[9]);
 
 		donutData = constructDonutData(regionsArray, 5);
         donutChart(data, donutData, 252 * 2, 140, "Middle East & North Africa", roseData[5], 200, roseData[9]);
@@ -1106,6 +1106,8 @@ function makeCharts() {
             .attr("height", 30)
             .attr("x", legendX)
             .attr("y", legendY)
+            .attr('rx', 10)
+            .attr('ry', 10)
             .style("fill", "#5c0010")
             .on("click", function(){
                 // FILTER FOR WINE: INTERACTION IMPLEMENTATION HERE
@@ -1124,6 +1126,8 @@ function makeCharts() {
             .attr("height", 30)
             .attr("x", legendX)
             .attr("y", legendY + 60)
+            .attr('rx', 10)
+            .attr('ry', 10)
             .style("fill", "#d28816")
             .on("click", function(){
             // FILTER FOR BEER: INTERACTION IMPLEMENTATION HERE
@@ -1143,6 +1147,8 @@ function makeCharts() {
             .attr("height", 30)
             .attr("x", legendX)
             .attr("y", legendY + 120)
+            .attr('rx', 10)
+            .attr('ry', 10)
             .style("fill", "#00CCCC")
         .on("click", function(){
         // FILTER FOR SPIRITS: INTERACTION IMPLEMENTATION HERE
