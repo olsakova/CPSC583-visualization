@@ -16,11 +16,13 @@ const DONUTWIDTH = 160;
 const DONUTHEIGHT = 160;
 const ROSEWIDTH = 500;
 const ROSEHEIGHT = 450;
+let colorScale;
 
 let ext_svg = {};
 var showWine = true;
 var showBeer = true;
 var showSpirits = true;
+
 
 function makeCharts() {
     //Get the data
@@ -48,7 +50,7 @@ function makeCharts() {
         minMaxSpirits = {	min: d3.min(data, d => {return parseFloat(d.Spirit_PerCapita);}),
             max: d3.max(data, d => {return parseFloat(d.Spirit_PerCapita);})};
 
-        const colorScale = d3.scaleLinear()
+        colorScale = d3.scaleLinear()
             .domain([minMaxHappiness.min, minMaxHappiness.min + (minMaxHappiness.max - minMaxHappiness.min) / 2, minMaxHappiness.max])
             .range(["#f7fcb9", "#addd8e", "#31a354"]); //Color scheme is colorblind safe according to colorbrewer
 		
@@ -169,6 +171,7 @@ function makeCharts() {
                 .enter()
                 .append('path')
                 .attr('class', d => {return 'country-' + d.id;})
+				.attr('name', d => {return d.properties.name;})
                 .attr('d', path)
                 .style('fill', d => {return d.happiness ? colorScale(parseFloat(d.happiness)) : 'white';})
                 .style('opacity', d => {return d.happiness ? 1.0 : 0.6;})
@@ -193,7 +196,7 @@ function makeCharts() {
 					
 					if(d.happiness){
 						//Update label
-						mapSvg.selectAll('text.glasses').text( d.id == 'COD' ? 'Dem. Rep. of the Congo' : d.id == 'COG' ? 'Rep. of the Congo'  :  d.properties.name + " Consumption");
+						mapSvg.selectAll('text.glasses').text( (d.id == 'COD' ? 'Dem. Rep. Congo' : d.id == 'COG' ? 'Rep. Congo'  : d.id == 'ARE' ? 'UAE' : d.properties.name) + " Consumption");
 
 						//Update glassses fill levels
 						updateGlassFill(ext_svg.wineGlass, d.wine, "Wine", parseFloat(d.wine).toFixed(2));
@@ -935,7 +938,8 @@ function makeCharts() {
         g.append("g")
             .selectAll("g")
             .data(d3.stack().keys(customizedData.columns.slice(1))(customizedData))
-            .enter().append("g")
+            .enter()
+			.append("g")
             .attr("fill", function (d) {
                 return z(d.key);
             })
@@ -962,7 +966,10 @@ function makeCharts() {
             .attr("transform", function () {
                 return "rotate(" + angleOffset + ")"
             })
-
+			//Click on country in rose chart to show in the glasses
+			.on('click', function(d) {
+				d3.selectAll('.country-' + d.data.Country).dispatch('click');
+			})
             //Tooltips!
             .on('mousemove', function (d) {
                 div.html('<span class="title">' + (getKeyByValue(abbr, d.data.Country)) + "</span>" + (d.data.Wine_PerCapita ? "</br> Wine: " + d.data.Wine_PerCapita : '') + (d.data.Spirit_PerCapita ? "</br>Spirits: " + d.data.Spirit_PerCapita : '' ) + (d.data.Beer_PerCapita ? "</br> Beer: " + d.data.Beer_PerCapita : ''))
@@ -970,7 +977,6 @@ function makeCharts() {
                     .style("left", (d3.event.pageX) - div.node().clientWidth / 2 + "px")
                     .style("top", (d3.event.pageY - div.node().clientHeight - 10) + "px");
             })
-
             .on('mouseout', function (d) {
                 div.style("opacity", 0)
             });
