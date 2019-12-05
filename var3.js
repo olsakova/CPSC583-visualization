@@ -66,16 +66,30 @@ function makeCharts() {
         let avgSpirits = d3.mean(data, d => {return d.Spirit_PerCapita; });
         let avgHappiness = d3.mean(data, d => {return d.HappinessScore;});
 		
-		generateWineGlass([minMaxWine.min, minMaxWine.max]).then(() => {updateGlassFill(ext_svg.wineGlass, avgWine, avgWine.toFixed(2));});
-		generateBeerGlass([minMaxBeer.min, minMaxBeer.max]).then(() => {updateGlassFill(ext_svg.beerGlass, avgBeer, avgBeer.toFixed(2));});
-		generateMartiniGlass([minMaxSpirits.min,minMaxSpirits.max]).then(() => {updateGlassFill(ext_svg.martiniGlass, avgSpirits, avgSpirits.toFixed(2));});
+		//Generate glasses
+		generateWineGlass([minMaxWine.min, minMaxWine.max]).then(() => {
+			updateGlassFill(ext_svg.wineGlass, avgWine, "Wine", avgWine.toFixed(2));
+		});
+		generateBeerGlass([minMaxBeer.min, minMaxBeer.max]).then(() => {
+			updateGlassFill(ext_svg.beerGlass, avgBeer, "Beer", avgBeer.toFixed(2));
+		});
+		generateMartiniGlass([minMaxSpirits.min,minMaxSpirits.max]).then(() => {
+			updateGlassFill(ext_svg.martiniGlass, avgSpirits, "Spirits", avgSpirits.toFixed(2));
+		});
 		generateSmile([minMaxHappiness.min, 10]).then(() => {
-			updateGlassFill(ext_svg.smile, avgHappiness, avgHappiness.toFixed(2) +'/10');
+			updateGlassFill(ext_svg.smile, avgHappiness, "Happiness", avgHappiness.toFixed(2) +'/10');
 			ext_svg.smile.fill.style('fill', colorScale(avgHappiness));
 		});
 
-		//Set up labels for glasses
+		let resetGlassesToWorldAvg = () => {
+			updateGlassFill(ext_svg.wineGlass, avgWine, "Wine", avgWine.toFixed(2));
+			updateGlassFill(ext_svg.beerGlass, avgBeer, "Beer", avgBeer.toFixed(2));
+			updateGlassFill(ext_svg.martiniGlass, avgSpirits, "Spirits", avgSpirits.toFixed(2));
+			updateGlassFill(ext_svg.smile, avgHappiness, "Happiness", avgHappiness.toFixed(2) +'/10');
+			ext_svg.smile.fill.style('fill', colorScale(avgHappiness));
+		};
 		
+		//Set up labels for glasses
         mapSvg.append('text')
 			.attr('class', 'glasses')
             .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
@@ -144,11 +158,7 @@ function makeCharts() {
 					mapSvg.selectAll('text.glasses').text("Global Average");
 				
 					//Set glass fill values
-					updateGlassFill(ext_svg.wineGlass, avgWine, avgWine.toFixed(2));
-					updateGlassFill(ext_svg.beerGlass, avgBeer, avgBeer.toFixed(2));
-					updateGlassFill(ext_svg.martiniGlass, avgSpirits, avgSpirits.toFixed(2));
-					updateGlassFill(ext_svg.smile, avgHappiness, avgHappiness.toFixed(2) +'/10');
-					ext_svg.smile.fill.style('fill', colorScale(avgHappiness));
+					resetGlassesToWorldAvg();
 			});
 
             //Draw countries onto map
@@ -186,10 +196,10 @@ function makeCharts() {
 						mapSvg.selectAll('text.glasses').text( d.id == 'COD' ? 'Dem. Rep. of the Congo' : d.id == 'COG' ? 'Rep. of the Congo'  :  d.properties.name + " Consumption");
 
 						//Update glassses fill levels
-						updateGlassFill(ext_svg.wineGlass, d.wine, parseFloat(d.wine).toFixed(2));
-						updateGlassFill(ext_svg.beerGlass, d.beer, parseFloat(d.beer).toFixed(2));
-						updateGlassFill(ext_svg.martiniGlass, d.spirit, parseFloat(d.spirit).toFixed(2));
-						updateGlassFill(ext_svg.smile, d.happiness, parseFloat(d.happiness).toFixed(2) +'/10');
+						updateGlassFill(ext_svg.wineGlass, d.wine, "Wine", parseFloat(d.wine).toFixed(2));
+						updateGlassFill(ext_svg.beerGlass, d.beer,"Beer", parseFloat(d.beer).toFixed(2));
+						updateGlassFill(ext_svg.martiniGlass, d.spirit, "Spirits", parseFloat(d.spirit).toFixed(2));
+						updateGlassFill(ext_svg.smile, d.happiness, "Hapiness", parseFloat(d.happiness).toFixed(2) +'/10');
 						ext_svg.smile.fill.style('fill', colorScale(parseFloat(d.happiness)));
 					}
 				});
@@ -309,15 +319,8 @@ function makeCharts() {
             buildColourLegend();
 			
         });
-
-        // Functions for generating fillable glasses
-        function updateGlassFill(glassData, fillAmount, label) {
-            glassData.fill.attr('height', glassData.scale(fillAmount))
-                .attr('y', glassData.maxHeight + (glassData.y - glassData.scale(fillAmount)));
-
-            glassData.text.text(label);
-        }
-
+		
+		//Code for generating the glasses
         async function generateWineGlass(minmax)
         {
             d3.selectAll('#wineglass').remove();
@@ -326,9 +329,12 @@ function makeCharts() {
                 mapSvg.node().appendChild(wineGlass.getElementsByTagName('svg')[0]);
 
 
+				let _x = MAP_WIDTH + MARGINS.right + 50;
+				let _y = 70;
+				
                 let glass = mapSvg.select("#wineglass")
-                    .attr('x', MAP_WIDTH + MARGINS.right + 100)
-                    .attr('y', 50);
+                    .attr('x', _x)
+                    .attr('y', _y);
 
                 let fill = glass.select('#fill');
 
@@ -337,13 +343,18 @@ function makeCharts() {
 
                 let wineScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
 
-                let label = mapSvg.append('text')
-                    .attr('x', MAP_WIDTH + MARGINS.right + 125)
-                    .attr('y', 170)
+                let title = mapSvg.append('text')
+                    .attr('x', _x + 100)
+                    .attr('y', _y + 40)
+                    .style('text-anchor', "middle")
+                    .text('100');
+				let label = mapSvg.append('text')
+                    .attr('x', _x + 100)
+                    .attr('y', _y + 60)
                     .style('text-anchor', "middle")
                     .text('100');
 
-                ext_svg.wineGlass = {glass: glass, scale: wineScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
+                ext_svg.wineGlass = {glass: glass, scale: wineScale, fill: fill, y: y, maxHeight: maxHeight, text: label, title: title};
             });
         }
 
@@ -355,10 +366,13 @@ function makeCharts() {
                 mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
 
 
+				let _x = MAP_WIDTH + MARGINS.right + 50;
+				let _y = 210;
+				
                 let glass = mapSvg.select("#beerglass")
-                    .attr('x', MAP_WIDTH + MARGINS.right + 100)
-                    .attr('y', 200);
-
+                    .attr('x', _x)
+                    .attr('y', _y);
+				
                 let fill = glass.select('#fill');
 
                 let maxHeight = fill.node().height.baseVal.value;
@@ -366,13 +380,19 @@ function makeCharts() {
 
                 let beerScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
 
-                let label = mapSvg.append('text')
-                    .attr('x', MAP_WIDTH + MARGINS.right + 125)
-                    .attr('y', 320)
+                let title = mapSvg.append('text')
+                    .attr('x', _x + 100)
+                    .attr('y', _y + 40)
                     .style('text-anchor', "middle")
                     .text('100');
 
-                ext_svg.beerGlass = {glass: glass, scale: beerScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
+				let label = mapSvg.append('text')
+                    .attr('x', _x + 100)
+                    .attr('y', _y + 60)
+                    .style('text-anchor', "middle")
+                    .text('100');
+				
+                ext_svg.beerGlass = {glass: glass, scale: beerScale, fill: fill, y: y, maxHeight: maxHeight, text: label, title: title};
             });
         }
 
@@ -383,10 +403,12 @@ function makeCharts() {
             await d3.xml('martiniglass.svg').then((glassSvg) => {
                 mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
 
-
+				let _x = MAP_WIDTH + MARGINS.right + 50;
+				let _y = 350;
+				
                 let glass = mapSvg.select("#martiniglass")
-                    .attr('x', MAP_WIDTH + MARGINS.right + 100)
-                    .attr('y', 350);
+                    .attr('x', _x)
+                    .attr('y', _y);
 
                 let fill = glass.select('#fill');
 
@@ -395,13 +417,18 @@ function makeCharts() {
 
                 let spiritScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
 
-                let label = mapSvg.append('text')
-                    .attr('x', MAP_WIDTH + MARGINS.right + 125)
-                    .attr('y', 470)
+                let title = mapSvg.append('text')
+                    .attr('x', _x + 100)
+                    .attr('y', _y + 40)
+                    .style('text-anchor', "middle")
+                    .text('100%');
+				let label = mapSvg.append('text')
+                    .attr('x', _x + 100)
+                    .attr('y', _y + 60)
                     .style('text-anchor', "middle")
                     .text('100%');
 
-                ext_svg.martiniGlass = {glass: glass, scale: spiritScale, fill: fill, y: y, maxHeight: maxHeight, text: label};
+                ext_svg.martiniGlass = {glass: glass, scale: spiritScale, fill: fill, y: y, maxHeight: maxHeight, text: label, title: title};
             });
         }
 
@@ -411,10 +438,12 @@ function makeCharts() {
             await d3.xml('smile.svg').then((glassSvg) => {
                 mapSvg.node().appendChild(glassSvg.getElementsByTagName('svg')[0]);
 
+				let _x = MAP_WIDTH + MARGINS.right + 50 - 12.5;
+				let _y = 490;
 
                 let glass = mapSvg.select("#smile")
-                    .attr('x', MAP_WIDTH + MARGINS.right + 100 - 12.5)
-                    .attr('y', 500);
+                    .attr('x', _x)
+                    .attr('y', _y);
 
                 let fill = glass.select('#fill');
 
@@ -423,9 +452,15 @@ function makeCharts() {
 
                 let happinessScale = d3.scaleLinear().range([0, maxHeight]).domain(minmax);
 
-                let label = mapSvg.append('text')
-                    .attr('x', MAP_WIDTH + MARGINS.right + 125)
-                    .attr('y', 595)
+                let title = mapSvg.append('text')
+                    .attr('x', _x + 125)
+                    .attr('y', _y + 40)
+                    .style('text-anchor', "middle")
+                    .text('100%');
+				
+				let label = mapSvg.append('text')
+                    .attr('x', _x + 125)
+                    .attr('y', _y + 60)
                     .style('text-anchor', "middle")
                     .text('100%');
 
@@ -435,7 +470,8 @@ function makeCharts() {
                     fill: fill,
                     y: y,
                     maxHeight: maxHeight,
-                    text: label
+                    text: label,
+					title: title
                 };
             });
         }
@@ -490,7 +526,6 @@ function makeCharts() {
             var countryAlcohol2 = Object.keys(countryAlcohol1).map(function (key) {
                 return [String(key), countryAlcohol1[key]];
             });
-
 
             //Reformat data for each region
             var easternEurope = countryAlcohol2[0][1];
@@ -627,41 +662,50 @@ function makeCharts() {
             buildColourLegend();
 
             //Build all donut charts, and pass in data to be used for rose chart
-            buildDonutCharts(data, regionsByAlcohol4, allRegionsRoseFormat);
+            buildDonutCharts(data, regionsByAlcohol4, allRegionsRoseFormat, countryAlcohol2);
         }
     }
 
+	// Functions for updating fillable glasses
+	function updateGlassFill(glassData, fillAmount, title, label) {
+		glassData.fill.attr('height', glassData.scale(fillAmount))
+			.attr('y', glassData.maxHeight + (glassData.y - glassData.scale(fillAmount)));
+
+		glassData.text.text(label);
+		glassData.title.text(title);
+	}
+	
     //Build all 9 donut charts, while also passing in parameters for each corresponding rose chart
-    function buildDonutCharts(data, regionsArray, roseData){
+    function buildDonutCharts(data, regionsArray, roseData, rawRegionData){
 
         var donutData;
 
 		donutData = constructDonutData(regionsArray, 7);
-        donutChart(data, donutData, 0, 140, "North America", roseData[7], 600, roseData[9]);
+        donutChart(data, donutData, 0, 140, "North America", roseData[7], 600, roseData[9], rawRegionData[7]);
 		
 		donutData = constructDonutData(regionsArray, 2);
-        donutChart(data, donutData, 0, 360, "South America", roseData[2], 500, roseData[9]);
+        donutChart(data, donutData, 0, 360, "South America", roseData[2], 500, roseData[9], rawRegionData[2]);
 		
 		donutData = constructDonutData(regionsArray, 4);
-        donutChart(data, donutData, 252 * 1, 140, "Western Europe", roseData[4], 600, roseData[9]);
+        donutChart(data, donutData, 252 * 1, 140, "Western Europe", roseData[4], 600, roseData[9], rawRegionData[4]);
 		
         donutData = constructDonutData(regionsArray, 0);
-        donutChart(data, donutData, 252 * 1, 360, "Central & Eastern Europe", roseData[0], 800, roseData[9]);
+        donutChart(data, donutData, 252 * 1, 360, "Central & Eastern Europe", roseData[0], 800, roseData[9], rawRegionData[0]);
 
 		donutData = constructDonutData(regionsArray, 5);
-        donutChart(data, donutData, 252 * 2, 140, "Middle East & North Africa", roseData[5], 200, roseData[9]);
+        donutChart(data, donutData, 252 * 2, 140, "Middle East & North Africa", roseData[5], 200, roseData[9], rawRegionData[5]);
 		
         donutData = constructDonutData(regionsArray, 1);
-        donutChart(data, donutData, 252 * 2, 360, "Sub-Saharan Africa", roseData[1], 500, roseData[9]);
+        donutChart(data, donutData, 252 * 2, 360, "Sub-Saharan Africa", roseData[1], 500, roseData[9], rawRegionData[1]);
 
         donutData = constructDonutData(regionsArray, 8);
-        donutChart(data, donutData, 252 * 3, 140, "Eastern Asia", roseData[8], 500, roseData[9]);
+        donutChart(data, donutData, 252 * 3, 140, "Eastern Asia", roseData[8], 500, roseData[9], rawRegionData[8]);
 
 		donutData = constructDonutData(regionsArray, 6);
-        donutChart(data, donutData, 252 * 3, 360, "South East Asia", roseData[6], 400, roseData[9]);
+        donutChart(data, donutData, 252 * 3, 360, "South East Asia", roseData[6], 400, roseData[9], rawRegionData[6]);
 		
         donutData = constructDonutData(regionsArray, 3);
-        donutChart(data, donutData, 252 * 4, 360, "Australia & New Zealand", roseData[3], 600, roseData[9]);
+        donutChart(data, donutData, 252 * 4, 360, "Australia & New Zealand", roseData[3], 600, roseData[9], rawRegionData[3]);
 		
 		//Draw section label
 		d3.select("svg").append('text')
@@ -675,12 +719,13 @@ function makeCharts() {
 
     // Format the data such that the donut code can make sense of it
     function constructDonutData(regionArray, regionIndex) {
-        var donutData = [{
+        var donutData = [
+		 {
             alcohol: (d3.keys(regionArray[regionIndex])[1]),
             consumption: (d3.values(regionArray[regionIndex])[1])
         },
             {alcohol: (d3.keys(regionArray[regionIndex])[2]), consumption: (d3.values(regionArray[regionIndex])[2])},
-            {alcohol: (d3.keys(regionArray[regionIndex])[3]), consumption: (d3.values(regionArray[regionIndex])[3])}
+            {alcohol: (d3.keys(regionArray[regionIndex])[3]), consumption: (d3.values(regionArray[regionIndex])[3])},
         ];
         return donutData;
     }
@@ -690,15 +735,12 @@ function makeCharts() {
         based on pie chart example: https://scrimba.com/p/pPrZLhD/c6ZPkH3
     */
 
-    function donutChart(dataset, customizedData, leftOffset, topOffset, regionTitle, roseData, roseMax, abbr) {
-
+    function donutChart(dataset, customizedData, leftOffset, topOffset, regionTitle, roseData, roseMax, abbr, rawRegionData) {		
         //Set the data
         var data = customizedData;
 
         var totalRegionConsumption = d3.sum(data, function(d){return d.consumption});
-
-        console.log("TOTAL CONSUMPTION FOR", regionTitle + ":", totalRegionConsumption);       //TESTING
-
+		
         var div = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
@@ -714,11 +756,25 @@ function makeCharts() {
 
         var radius = 85;
         var color = d3.scaleOrdinal(["#5c0010", "#d28816", "#00CCCC"]);
-
+		
         //Build donut chart svg
         let g = donutSvg.append("g")
 			.attr('class', 'donut')
-		.attr("transform", "translate(" + (chartWidth + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
+			//hack for getting data into the group for use in click events on any part of the donut chart
+			.attr('data-region', regionTitle)
+			.attr('data-wine', () => {
+				return d3.mean(rawRegionData[1], (d) => {return d.Wine_PerCapita});
+			})
+			.attr('data-beer', () => {
+				return d3.mean(rawRegionData[1], (d) => {return d.Beer_PerCapita});
+			})
+			.attr('data-spirits', () => {
+				return d3.mean(rawRegionData[1], (d) => {return d.Spirit_PerCapita});
+			})
+			.attr('data-happiness', () => {
+				return d3.mean(rawRegionData[1], (d) => {return d.HappinessScore});
+			})
+			.attr("transform", "translate(" + (chartWidth + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
 
         var donut = d3.pie().value(function (d) {
             return d.consumption;
@@ -777,12 +833,22 @@ function makeCharts() {
         //INTERACTION!
         g.style('cursor', 'pointer')
 			.on("click", function () {
-
             // Hide the donuts
 			donutSvg.selectAll('.donut').attr('display', 'none');
 			donutSvg.selectAll('.chartLegend').attr('display', 'none');
 			//Draw the rose chart
             roseChart(dataset, regionTitle, roseData, roseMax, abbr);
+			
+			let donutGroup = d3.select(this);
+			
+			//Update Glasses Title
+			donutSvg.selectAll('text.glasses').text((donutGroup.attr('data-region') == "Middle East & North Africa" ? "M. East & N. Africa" : donutGroup.attr('data-region') ) + (donutGroup.attr('data-region').length > 15 ? " Avg." : " Average") );
+			//Update glassses fill levels to region
+			updateGlassFill(ext_svg.wineGlass, donutGroup.attr('data-wine'), "Wine", parseFloat(donutGroup.attr('data-wine')).toFixed(2));
+			updateGlassFill(ext_svg.beerGlass, donutGroup.attr('data-beer'),"Beer", parseFloat(donutGroup.attr('data-beer')).toFixed(2));
+			updateGlassFill(ext_svg.martiniGlass, donutGroup.attr('data-spirits'), "Spirits", parseFloat(donutGroup.attr('data-spirits')).toFixed(2));
+			updateGlassFill(ext_svg.smile, donutGroup.attr('data-happiness'), "Hapiness", parseFloat(donutGroup.attr('data-happiness')).toFixed(2) +'/10');
+			ext_svg.smile.fill.style('fill', colorScale(parseFloat(donutGroup.attr('data-happiness'))));
         });
     }
 
