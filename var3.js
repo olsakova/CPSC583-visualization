@@ -16,9 +16,10 @@ const DONUTWIDTH = 160;
 const DONUTHEIGHT = 160;
 const ROSEWIDTH = 500;
 const ROSEHEIGHT = 450;
-let colorScale;
 
+let colorScale;
 let ext_svg = {};
+let currentRegion;
 var showWine = true;
 var showBeer = true;
 var showSpirits = true;
@@ -659,7 +660,11 @@ function makeCharts() {
                 .attr('y', HEIGHT)
                 .attr('height', MARGINS.bottom)
                 .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
-                .style('fill', "#CCC");
+                .style('fill', "#CCC")
+				.on('click', () => {
+					if(currentRegion)
+						d3.select('[data-region="'+ currentRegion +'"]').dispatch('showRegionData');
+				});
 			
 			//Draw colour legend for each alcohol type
             buildColourLegend();
@@ -844,6 +849,15 @@ function makeCharts() {
 			
 			let donutGroup = d3.select(this);
 			
+			//set current region variable
+			currentRegion = donutGroup.attr('data-region');
+			
+			donutGroup.dispatch('showRegionData');
+			
+        })
+		.on('showRegionData', function(){
+			let donutGroup = d3.select(this);
+			
 			//Update Glasses Title
 			donutSvg.selectAll('text.glasses').text((donutGroup.attr('data-region') == "Middle East & North Africa" ? "M. East & N. Africa" : donutGroup.attr('data-region') ) + (donutGroup.attr('data-region').length > 15 ? " Avg." : " Average") );
 			//Update glassses fill levels to region
@@ -852,7 +866,7 @@ function makeCharts() {
 			updateGlassFill(ext_svg.martiniGlass, donutGroup.attr('data-spirits'), "Spirits", parseFloat(donutGroup.attr('data-spirits')).toFixed(2));
 			updateGlassFill(ext_svg.smile, donutGroup.attr('data-happiness'), "Hapiness", parseFloat(donutGroup.attr('data-happiness')).toFixed(2) +'/10');
 			ext_svg.smile.fill.style('fill', colorScale(parseFloat(donutGroup.attr('data-happiness'))));
-        });
+		});
     }
 
 
@@ -966,6 +980,7 @@ function makeCharts() {
             .attr("transform", function () {
                 return "rotate(" + angleOffset + ")"
             })
+			.style('cursor', 'pointer')
 			//Click on country in rose chart to show in the glasses
 			.on('click', function(d) {
 				d3.selectAll('.country-' + d.data.Country).dispatch('click');
@@ -1275,6 +1290,9 @@ function makeCharts() {
 				donutButtonSvg.selectAll('.donut').attr('display', 'true');
                 donutButtonSvg.selectAll('.chartLegend').attr('display', 'true');
 			
+				//reset current region
+				currentRegion = null;
+			
 			})
 			.style('cursor', 'pointer')
 			.append('text')
@@ -1284,8 +1302,7 @@ function makeCharts() {
 			.attr('y', HEIGHT + MARGINS.bottom - 25)
 			.text('← regions')
 			.style('fill', 'black')
-			.style('font-size', '18px');
-		
+			.style('font-size', '18px');		
      }
 	
 	// Src: https://stackoverflow.com/a/28191966
