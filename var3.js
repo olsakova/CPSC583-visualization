@@ -196,7 +196,12 @@ function makeCharts() {
                 })
 				.on('click', function(d){
 					
-					if(d.happiness){
+					//only do click stuff for countries with data that are within the selection
+					if(d.happiness && d3.select(this).style("opacity") == 1){
+						//Highlight selected country
+						d3.selectAll('[type="country"]').style('stroke', 'black').style('stroke-width', 0.3);
+						d3.select(this).style('stroke', 'white').style('stroke-width', 2);
+
 						//Update label
 						mapSvg.selectAll('text.glasses').text( (d.id == 'COD' ? 'Dem. Rep. Congo' : d.id == 'COG' ? 'Rep. Congo'  : d.id == 'ARE' ? 'UAE' : d.properties.name) + " Consumption");
 
@@ -663,8 +668,10 @@ function makeCharts() {
                 .attr('width', MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right)
                 .style('fill', "#CCC")
 				.on('click', () => {
-					if(currentRegion)
+					if(currentRegion){
 						d3.select('[data-region="'+ currentRegion +'"]').dispatch('showRegionData');
+						d3.selectAll('[type="country"]').style('stroke', 'black').style('stroke-width', 0.3);
+					}
 				});
 			
 			//Draw colour legend for each alcohol type
@@ -856,14 +863,15 @@ function makeCharts() {
 			//Show the region data in the cups
 			donutGroup.dispatch('showRegionData');
 			
-			console.log(dataset);
-		
+			//unhighlight selected countries
+			d3.selectAll('[type="country"]').style('stroke', 'black').style('stroke-width', 0.3);
+
 			for(let cntry of dataset){
-				d3.selectAll('[type="country"],[type="nodata"]').style('opacity', 0.25);
+				d3.selectAll('[type="country"],[type="nodata"]').style('opacity', 0.25).style('cursor', 'default');
 			}
 			
 			for(let cntry of roseData){
-				d3.selectAll('.country-' + cntry.Country).style('opacity', 1);
+				d3.selectAll('.country-' + cntry.Country).style('opacity', 1).style('cursor', 'pointer');
 			}
 			
         })
