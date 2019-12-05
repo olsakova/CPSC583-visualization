@@ -159,9 +159,12 @@ function makeCharts() {
 					
 					//Update label
 					mapSvg.selectAll('text.glasses').text("Global Average");
-				
+					
 					//Set glass fill values
 					resetGlassesToWorldAvg();
+				
+					//unhighlight selected countries
+					d3.selectAll('[type="country"]').style('stroke', 'black').style('stroke-width', 0.3);
 			});
 
             //Draw countries onto map
