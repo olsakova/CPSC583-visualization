@@ -173,6 +173,7 @@ function makeCharts() {
                 .append('path')
                 .attr('class', d => {return 'country-' + d.id;})
 				.attr('name', d => {return d.properties.name;})
+				.attr('type', d => {return d.happiness ? 'country' : 'nodata';})
                 .attr('d', path)
                 .style('fill', d => {return d.happiness ? colorScale(parseFloat(d.happiness)) : 'white';})
                 .style('opacity', d => {return d.happiness ? 1.0 : 0.6;})
@@ -852,7 +853,18 @@ function makeCharts() {
 			//set current region variable
 			currentRegion = donutGroup.attr('data-region');
 			
+			//Show the region data in the cups
 			donutGroup.dispatch('showRegionData');
+			
+			console.log(dataset);
+		
+			for(let cntry of dataset){
+				d3.selectAll('[type="country"],[type="nodata"]').style('opacity', 0.25);
+			}
+			
+			for(let cntry of roseData){
+				d3.selectAll('.country-' + cntry.Country).style('opacity', 1);
+			}
 			
         })
 		.on('showRegionData', function(){
@@ -1292,6 +1304,10 @@ function makeCharts() {
 			
 				//reset current region
 				currentRegion = null;
+			
+				//refocus all countries
+				donutButtonSvg.selectAll('[type="country"]').style('opacity', 1);
+				donutButtonSvg.selectAll('[type="nodata"]').style('opacity', 0.6);
 			
 			})
 			.style('cursor', 'pointer')
