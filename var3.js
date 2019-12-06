@@ -107,6 +107,24 @@ function makeCharts() {
             .style('font-size', '12px')
             .text('(litres per capita per year)');
 
+        mapSvg.append('text')
+            .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
+            .attr('y', 50)
+            .attr('fill', 'red')
+            .style('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .attr('width', 200)
+            .text('Explore specific countries');
+
+        mapSvg.append('text')
+            .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
+            .attr('y', 62)
+            .attr('fill', 'red')
+            .style('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .attr('width', 200)
+            .text('by clicking on them!');
+
 
         let HACData = {};
 
@@ -343,7 +361,7 @@ function makeCharts() {
 
 
 				let _x = MAP_WIDTH + MARGINS.right + 50;
-				let _y = 70;
+				let _y = 80;
 				
                 let glass = mapSvg.select("#wineglass")
                     .attr('x', _x)
@@ -734,6 +752,14 @@ function makeCharts() {
 			.style('text-anchor', 'middle')
 			.style('font-size', '20px')
 			.text("Alcohol Consumption by Region");
+
+        d3.select("svg").append('text')
+            .attr('class', 'donut')
+            .attr('y', HEIGHT+45)
+            .attr('x', (MAP_WIDTH + SIDE_WIDTH + MARGINS.left + MARGINS.right) / 2)
+            .style('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .text("Select a donut chart to view a detailed break down of all countries in that region.");
     }
 
     // Format the data such that the donut code can make sense of it
@@ -1021,10 +1047,19 @@ function makeCharts() {
 
         g.append('text')
             .attr('x', (-ROSEWIDTH) + 35)
+            .attr('y', -30)
             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('font-size', 30)
             .text(title);
+
+        g.append('text')
+            .attr('x', (-ROSEWIDTH) + 35)
+            .attr('y', 0)
+            .style('text-anchor', 'middle')
+            .style('font-weight', 'bold')
+            .style('font-size', 14)
+            .text("Filter by alcohol type using the buttons below.");
 
         var label = g.append("g")
             .selectAll("g")
