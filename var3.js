@@ -796,8 +796,8 @@ function makeCharts() {
 			.attr("transform", "translate(" + (chartWidth + leftOffset) + "," + (HEIGHT + margin.top + topOffset) + ")"); // <---- This is where you play with it's position
 
         var donut = d3.pie().value(function (d) {
-            return d.consumption;
-        });
+            return d.consumption;})
+            .sort(null);
 
         var path = d3.arc()
             .outerRadius(radius)
