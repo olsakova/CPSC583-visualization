@@ -105,26 +105,7 @@ function makeCharts() {
             .attr('y', 35)
             .style('text-anchor', 'middle')
             .style('font-size', '12px')
-            .text('(litres per capita per year)');
-
-        mapSvg.append('text')
-            .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
-            .attr('y', 50)
-            .attr('fill', 'red')
-            .style('text-anchor', 'middle')
-            .style('font-size', '12px')
-            .attr('width', 200)
-            .text('Explore specific countries');
-
-        mapSvg.append('text')
-            .attr('x', MAP_WIDTH + MARGINS.right + 100 + 25)
-            .attr('y', 62)
-            .attr('fill', 'red')
-            .style('text-anchor', 'middle')
-            .style('font-size', '12px')
-            .attr('width', 200)
-            .text('by clicking on them!');
-
+            .text('(litres per capita per year)');	
 
         let HACData = {};
 
@@ -299,6 +280,15 @@ function makeCharts() {
                 .style('text-anchor', 'start')
                 .text('Happy');
 
+			mapSvg.append('text')
+				.attr('x', (MAP_WIDTH + MARGINS.left )/2)
+				.attr('y', 15)
+				.attr('fill', 'black')
+				.style('text-anchor', 'middle')
+				.style('font-size', '12px')
+				.attr('width', 200)
+				.text('Explore specific countries by clicking on them!');
+			
             //Prepare Country Abbreviations using the world map data to use in the rose charts
             let countryAbbr = [];
             map_data.features.forEach(c => {
